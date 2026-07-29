@@ -15,10 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeCurrent = document.getElementById('time-current');
     const timeTotal = document.getElementById('time-total');
     const speedControl = document.getElementById('main-scroll-speed');
+    const scrollPlayPauseBtn = document.getElementById('ctrl-scroll-playpause');
+    const contactBtn = document.getElementById('contact-btn');
+    const contactModal = document.getElementById('contact-modal');
+    const closeContactBtn = document.getElementById('close-contact-btn');
 
     let isLoading = false;
     let scrollInterval;
     let isHovering = false; // To pause auto-scroll
+    let isScrollManuallyPaused = false;
 
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
@@ -236,10 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPosts = (count = 10) => {
         if(config.images.length === 0) return; 
         
+        const sizes = ['small', 'medium', 'large'];
+
         for(let i=0; i<count; i++) {
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
-            article.className = 'post';
+            const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+            article.className = `post ${randomSize}`;
             
             const instaUser = extractInstaUsername(randomItem.link);
 
@@ -278,9 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function startAutoScroll() {
         function scrollLoop() {
-            // Target speed based on UI and hover state
+            // Target speed based on UI, manual pause, and hover state
             const userSpeed = parseFloat(speedControl.value) || 3;
-            const targetSpeed = isHovering ? 0 : (userSpeed * 0.5);
+            let targetSpeed = 0;
+            if(!isHovering && !isScrollManuallyPaused) {
+                targetSpeed = userSpeed * 0.5;
+            }
             
             // Interpolation (easing) formula
             currentSpeed += (targetSpeed - currentSpeed) * 0.05;
@@ -303,6 +314,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         scrollInterval = requestAnimationFrame(scrollLoop);
     }
+
+    // Scroll Control Button
+    scrollPlayPauseBtn.addEventListener('click', () => {
+        isScrollManuallyPaused = !isScrollManuallyPaused;
+        scrollPlayPauseBtn.innerHTML = isScrollManuallyPaused 
+            ? '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' // Play icon
+            : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>'; // Pause icon
+    });
+
+    // Contact Modal Logic
+    if(contactBtn) {
+        contactBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
+    }
+    if(closeContactBtn) {
+        closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
+    }
+    document.getElementById('contact-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Thank you! This is a UI demo, no data was actually sent.');
+        contactModal.classList.add('hidden');
+        e.target.reset();
+    });
 
     // Pause auto-scroll on manual interaction
     let scrollTimeout;

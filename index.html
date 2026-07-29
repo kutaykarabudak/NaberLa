@@ -15,16 +15,16 @@
         <div class="overlay-content">
             <h1>NaberLa</h1>
             <p>Experience the vibe.</p>
-            <button id="enter-btn">Enter</button>
-        </div>
+        <button id="enter-btn" class="btn primary">ENTER NABERLA</button>
     </div>
 
     <!-- Main Container -->
     <main id="app">
-        <header class="app-header">
-            <h1 class="logo">NaberLa.</h1>
-            <div class="header-right">
-                <a href="admin.html" class="admin-link">Admin</a>
+        <header>
+            <div class="logo">NaberLa.</div>
+            <div>
+                <button id="contact-btn" class="btn outline" style="margin-right: 15px;">Contact</button>
+                <a href="https://github.com/kutaykarabudak/NaberLa" target="_blank" class="btn primary">GitHub</a>
             </div>
         </header>
 
@@ -74,9 +74,26 @@
 
         <div class="player-right">
             <div class="speed-control">
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <button id="ctrl-scroll-playpause" aria-label="Pause/Resume Scroll" class="scroll-btn">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
                 <input type="range" id="main-scroll-speed" min="1" max="10" value="3" title="Scroll Speed">
             </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="overlay hidden">
+        <div class="modal-box">
+            <button id="close-contact-btn" class="close-btn">&times;</button>
+            <h2>Contact NaberLa</h2>
+            <p>For DJs, Models, or General Inquiries</p>
+            <form id="contact-form" class="input-group" style="flex-direction:column; gap:15px; margin-top:20px;">
+                <input type="text" placeholder="Full Name" required>
+                <input type="text" placeholder="Instagram or Email" required>
+                <textarea placeholder="Your Message..." rows="4" required style="background:var(--input-bg); border:1px solid var(--glass-border); color:var(--text-primary); padding:12px; border-radius:8px; font-family:inherit; resize:none;"></textarea>
+                <button type="submit" class="btn primary">Send Message</button>
+            </form>
         </div>
     </div>
 
