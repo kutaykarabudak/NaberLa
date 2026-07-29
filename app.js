@@ -1,49 +1,164 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startOverlay = document.getElementById('start-overlay');
     const enterBtn = document.getElementById('enter-btn');
-    const bgMusic = document.getElementById('bg-music');
-    const musicSrc = document.getElementById('music-src');
-    const muteBtn = document.getElementById('mute-btn');
     const feedContainer = document.getElementById('feed-container');
     
-    let isMuted = false;
+    // Player DOM
+    const htmlAudio = document.getElementById('html-audio');
+    const btnPlayPause = document.getElementById('ctrl-playpause');
+    const btnNext = document.getElementById('ctrl-next');
+    const btnMute = document.getElementById('ctrl-mute');
+    const titleEl = document.getElementById('current-song-title');
+    const ytLinkEl = document.getElementById('yt-link');
+
     let isLoading = false;
     let scrollInterval;
+    let isHovering = false; // To pause auto-scroll
 
-    // Load Configuration from localStorage
-    const defaultConfig = {
-        speed: 3,
-        music: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
-        images: [
-            'https://picsum.photos/seed/1/400/600',
-            'https://picsum.photos/seed/2/600/400',
-            'https://picsum.photos/seed/3/500/500',
-            'https://picsum.photos/seed/4/400/800',
-            'https://picsum.photos/seed/5/800/600',
-            'https://picsum.photos/seed/6/500/700',
-            'https://picsum.photos/seed/7/600/600',
-            'https://picsum.photos/seed/8/400/500',
-            'https://picsum.photos/seed/9/700/500'
-        ]
+    // Config
+    let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
+    if(!config.images || config.images.length === 0) {
+        config.images = ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800']; // fallback
+    }
+    
+    // MUSIC PLAYER LOGIC
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+    let isMuted = false;
+    let ytPlayer = null;
+    let isYtReady = false;
+    let currentMode = 'none'; // 'youtube' or 'html'
+
+    const SVG_PLAY = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+    const SVG_PAUSE = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+    const SVG_UNMUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
+    const SVG_MUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+
+    // Initialize YouTube API
+    window.onYouTubeIframeAPIReady = function() {
+        ytPlayer = new YT.Player('yt-player', {
+            height: '0', width: '0',
+            playerVars: { 'autoplay': 0, 'controls': 0 },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
     };
 
-    let config = JSON.parse(localStorage.getItem('naberlaConfig')) || defaultConfig;
-    
-    // Apply music config
-    musicSrc.src = config.music;
-    bgMusic.load();
+    function onPlayerReady(event) {
+        isYtReady = true;
+    }
 
-    // Render Posts
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            playNextTrack();
+        }
+        if (event.data === YT.PlayerState.PLAYING) {
+            updatePlayBtn(true);
+            titleEl.innerText = ytPlayer.getVideoData().title || "YouTube Audio";
+        }
+    }
+
+    htmlAudio.addEventListener('ended', playNextTrack);
+    htmlAudio.addEventListener('play', () => updatePlayBtn(true));
+    htmlAudio.addEventListener('pause', () => updatePlayBtn(false));
+
+    function getYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function playTrack(index) {
+        if(!config.music || config.music.length === 0) {
+            titleEl.innerText = "No music in playlist";
+            return;
+        }
+        currentTrackIndex = index % config.music.length;
+        const url = config.music[currentTrackIndex];
+        
+        // Stop current
+        htmlAudio.pause();
+        if(isYtReady && ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+
+        const ytId = getYouTubeId(url);
+        if(ytId) {
+            currentMode = 'youtube';
+            ytLinkEl.href = url;
+            ytLinkEl.classList.remove('hidden');
+            titleEl.innerText = "Loading YouTube...";
+            if(isYtReady) {
+                ytPlayer.loadVideoById(ytId);
+                ytPlayer.setVolume(isMuted ? 0 : 50);
+                ytPlayer.playVideo();
+            } else {
+                // Try again shortly if API not loaded
+                setTimeout(() => playTrack(index), 500);
+            }
+        } else {
+            currentMode = 'html';
+            ytLinkEl.classList.add('hidden');
+            titleEl.innerText = url.split('/').pop();
+            htmlAudio.src = url;
+            htmlAudio.volume = isMuted ? 0 : 0.5;
+            htmlAudio.play().catch(e=>console.log("Audio play error", e));
+        }
+        isPlaying = true;
+    }
+
+    function togglePlayPause() {
+        if(currentMode === 'youtube' && isYtReady) {
+            const state = ytPlayer.getPlayerState();
+            if(state === YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+                updatePlayBtn(false);
+            } else {
+                ytPlayer.playVideo();
+                updatePlayBtn(true);
+            }
+        } else if(currentMode === 'html') {
+            if(htmlAudio.paused) {
+                htmlAudio.play();
+                updatePlayBtn(true);
+            } else {
+                htmlAudio.pause();
+                updatePlayBtn(false);
+            }
+        }
+    }
+
+    function playNextTrack() {
+        playTrack(currentTrackIndex + 1);
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        if(currentMode === 'youtube' && isYtReady) {
+            ytPlayer.setVolume(isMuted ? 0 : 50);
+        }
+        htmlAudio.volume = isMuted ? 0 : 0.5;
+        btnMute.innerHTML = isMuted ? SVG_MUTED : SVG_UNMUTED;
+    }
+
+    function updatePlayBtn(playing) {
+        isPlaying = playing;
+        btnPlayPause.innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
+    }
+
+    btnPlayPause.addEventListener('click', togglePlayPause);
+    btnNext.addEventListener('click', playNextTrack);
+    btnMute.addEventListener('click', toggleMute);
+
+    // RENDER POSTS
     const renderPosts = (count = 10) => {
-        if(config.images.length === 0) return; // No images available
+        if(config.images.length === 0) return; 
         
         for(let i=0; i<count; i++) {
-            // Pick a random image from the config
             const randomImage = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
             article.className = 'post';
             
-            // Mock username
             const id = Math.floor(Math.random() * 1000);
             const usernames = ['model.life', 'vogue.dreamer', 'style.muse', 'runway_star'];
             const username = usernames[Math.floor(Math.random() * usernames.length)];
@@ -59,6 +174,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
+            
+            // Hover-to-pause logic
+            article.addEventListener('mouseenter', () => isHovering = true);
+            article.addEventListener('mouseleave', () => isHovering = false);
+
             feedContainer.appendChild(article);
         }
     };
@@ -66,33 +186,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load
     renderPosts(12);
 
-    // Initialization / Autoplay policy handling
+    // Initialization 
     enterBtn.addEventListener('click', () => {
         startOverlay.classList.add('hidden');
-        bgMusic.volume = 0.5;
-        bgMusic.play().catch(e => console.log("Audio play failed:", e));
+        playTrack(0);
         startAutoScroll();
-    });
-
-    // Mute/Unmute
-    muteBtn.addEventListener('click', () => {
-        isMuted = !isMuted;
-        bgMusic.muted = isMuted;
-        if(isMuted) {
-            muteBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
-        } else {
-            muteBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
-        }
     });
 
     // Auto-Scroll Logic
     function startAutoScroll() {
         const speedMultiplier = parseInt(config.speed) || 3;
-        // speed mapped to pixel increments per frame (approx 60fps)
         const pixelsPerFrame = speedMultiplier * 0.5; 
         
         function scrollLoop() {
-            window.scrollBy(0, pixelsPerFrame);
+            if(!isHovering) {
+                window.scrollBy(0, pixelsPerFrame);
+            }
             
             // Check for bottom to load more
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
@@ -116,6 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             startAutoScroll();
-        }, 1500); // Resume auto-scroll after 1.5s of no manual scrolling
+        }, 1500); 
     });
 });

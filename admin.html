@@ -35,10 +35,15 @@
                         <span id="speed-display">3</span>
                     </div>
                 </div>
-                <div class="input-group">
-                    <label>Background Music URL (.mp3)</label>
-                    <input type="text" id="music-url" placeholder="https://example.com/music.mp3">
+            </section>
+
+            <section class="card">
+                <h2>Playlist (MP3 or YouTube)</h2>
+                <div class="input-group" style="flex-direction:row;">
+                    <input type="text" id="new-music-url" placeholder="https://youtube.com/... or .mp3" style="flex:1;">
+                    <button id="add-music-btn" class="btn primary">Add Song</button>
                 </div>
+                <ul id="music-list" class="item-list"></ul>
             </section>
 
             <section class="card">
