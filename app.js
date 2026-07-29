@@ -271,14 +271,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPosts = (count = 10) => {
         if(config.images.length === 0) return; 
         
-        const sizes = ['small', 'medium', 'large'];
-
         for (let i = 0; i < count; i++) {
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
-            const sizeClass = sizes[Math.floor(Math.random() * sizes.length)];
-            const isWide = Math.random() < 0.2 ? 'wide' : '';
-            article.className = `post ${sizeClass} ${isWide}`;
+            const sizeClasses = ['small', 'medium', 'large'];
+            let sizeClass = sizeClasses[Math.floor(Math.random() * sizeClasses.length)];
+            
+            const randCol = Math.random();
+            let colClass = 'col-span-1'; // 70% chance
+            
+            if (randCol > 0.90) {
+                colClass = 'col-span-3'; // 10% chance
+                sizeClass = 'large'; // Ensure height is large so it's not a thin strip
+            } else if (randCol > 0.70) {
+                colClass = 'col-span-2'; // 20% chance
+            }
+            
+            article.className = `post ${sizeClass} ${colClass}`;
             
             const isVideo = randomItem.imgUrl.match(/\.(mp4|webm|ogg)$/i);
             const mediaTag = isVideo 
