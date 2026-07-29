@@ -342,48 +342,60 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Initial load
-    renderPosts(12);
+    renderPosts(16);
 
-    // Initialization 
-    enterBtn.addEventListener('click', () => {
-        startOverlay.classList.add('hidden');
-        startOverlay.style.display = 'none'; // Force hide due to inline flex bugs
-        playTrack(0);
-        startAutoScroll();
-    });
-
-    // Auto-Scroll Logic
+    let isEntered = false;
     let currentSpeed = 0; // Real-time velocity for easing
-    
-    function startAutoScroll() {
-        function scrollLoop() {
-            // Target speed based on UI, manual pause, and hover state
-            const userSpeed = parseFloat(speedControl.value) || 3;
-            let targetSpeed = 0;
-            if(!isHovering && !isScrollManuallyPaused) {
-                targetSpeed = userSpeed * 0.5;
-            }
-            
-            // Interpolation (easing) formula
-            currentSpeed += (targetSpeed - currentSpeed) * 0.05;
-            
-            if (Math.abs(currentSpeed) > 0.05) {
-                window.scrollBy(0, currentSpeed);
-            }
-            
-            // Check for bottom to load more
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
-                if(!isLoading) {
-                    isLoading = true;
-                    setTimeout(() => {
-                        renderPosts(8);
-                        isLoading = false;
-                    }, 100);
-                }
-            }
-            scrollInterval = requestAnimationFrame(scrollLoop);
+
+    // Auto-Scroll Loop (Runs immediately for ambient preview under curtain)
+    function scrollLoop() {
+        const userSpeed = parseFloat(speedControl.value) || 3;
+        let targetSpeed = 0;
+        
+        if (!isEntered) {
+            targetSpeed = 0.8; // Slow ambient flow under curtain
+        } else if (!isHovering && !isScrollManuallyPaused) {
+            targetSpeed = userSpeed * 0.5;
         }
-        scrollInterval = requestAnimationFrame(scrollLoop);
+        
+        currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+        
+        if (Math.abs(currentSpeed) > 0.02) {
+            window.scrollBy(0, currentSpeed);
+        }
+        
+        // Infinite scroll check
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+            if (!isLoading) {
+                isLoading = true;
+                setTimeout(() => {
+                    renderPosts(8);
+                    isLoading = false;
+                }, 100);
+            }
+        }
+        requestAnimationFrame(scrollLoop);
+    }
+    
+    // Start ambient auto-scroll loop immediately
+    requestAnimationFrame(scrollLoop);
+
+    // Initialization & Curtain Lift
+    if (enterBtn) {
+        enterBtn.addEventListener('click', () => {
+            isEntered = true;
+            
+            // Lift curtain overlay up smoothly
+            startOverlay.classList.add('curtain-lift');
+            
+            // Set display none after 900ms transition
+            setTimeout(() => {
+                startOverlay.style.display = 'none';
+            }, 900);
+
+            // Start music playback
+            playTrack(0);
+        });
     }
 
     // Scroll Control Button

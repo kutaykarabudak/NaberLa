@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(sessionStorage.getItem('isAdmin') === 'true') {
         showDashboard();
+    } else {
+        // Render data immediately so items are visible
+        loadData();
     }
 
     function showDashboard() {
@@ -74,20 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!config) {
         config = JSON.parse(JSON.stringify(defaultConfig));
     } else {
-        // Bulletproof fallbacks & Migration
         if (typeof config.speed === 'undefined') config.speed = defaultConfig.speed;
-        if (!config.images || config.images.length < 5 || (config.images[0] && config.images[0].imgUrl.includes('pinimg.com/736x/82/6b/b3'))) {
+        if (!config.images || config.images.length < 5) {
             config.images = JSON.parse(JSON.stringify(defaultConfig.images));
         }
-        
-        // Migrate legacy string images to objects
         config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
 
         if (!config.music) config.music = [...defaultConfig.music];
         else if (typeof config.music === 'string') config.music = [config.music];
     }
     
-    // Always save normalized config back immediately
     saveData();
 
     function saveData() {
@@ -118,16 +117,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderImages() {
         const list = document.getElementById('image-list');
+        const header = document.getElementById('image-count-header');
+        if (header) header.innerText = `Image Feed Links (${config.images.length})`;
+
         list.innerHTML = '';
         config.images.forEach((item, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
                 <div class="item-content" style="flex-direction:column; align-items:flex-start;">
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px; width:100%;">
                         <img src="${item.imgUrl}" alt="thumb" onerror="this.src='https://via.placeholder.com/40'">
-                        <span style="overflow:hidden; text-overflow:ellipsis;">${item.imgUrl}</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px; color:#fff;">${item.imgUrl}</span>
                     </div>
-                    ${item.link ? `<small style="color:#aaa;">🔗 Target: ${item.link}</small>` : ''}
+                    ${item.link ? `<small style="color:#aaa;">🔗 ${item.link}</small>` : ''}
                 </div>
                 <button class="btn delete-btn" data-type="img" data-index="${index}">Delete</button>
             `;
@@ -148,12 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderMusic() {
         const list = document.getElementById('music-list');
+        const header = document.getElementById('music-count-header');
+        if (header) header.innerText = `Playlist (${config.music.length} songs)`;
+
         list.innerHTML = '';
         config.music.forEach((url, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
                 <div class="item-content">
-                    <span style="overflow:hidden; text-overflow:ellipsis;">🎵 ${url}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; color:#fff;">🎵 ${url}</span>
                 </div>
                 <button class="btn delete-btn" data-type="music" data-index="${index}">Delete</button>
             `;
@@ -161,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event Delegation for Delete Buttons
+    // Delete delegation
     document.querySelector('.admin-content').addEventListener('click', (e) => {
         if (e.target.classList.contains('delete-btn')) {
             const type = e.target.getAttribute('data-type');
@@ -177,17 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Pinterest Auto-Scraper
+    // Pinterest Universal Scraper (Shortlinks pin.it, Board RSS, Single Pins)
     document.getElementById('scan-btn').addEventListener('click', async () => {
-        let url = document.getElementById('pinterest-url').value.trim();
-        if(!url) { alert("Please enter a Pinterest board URL"); return; }
+        let inputUrl = document.getElementById('pinterest-url').value.trim();
+        if(!inputUrl) { alert("Please enter a Pinterest URL"); return; }
         
-        // Ensure it ends with .rss
-        if (!url.endsWith('.rss')) {
-            if (!url.endsWith('/')) url += '/';
-            url += '.rss';
-        }
-
         const statusLabel = document.getElementById('scan-status');
         const progressContainer = document.getElementById('scan-progress-container');
         const progressBar = document.getElementById('scan-progress-bar');
@@ -198,60 +197,101 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerHTML = '⏳ Scanning...';
         statusLabel.style.display = 'block';
         progressContainer.style.display = 'block';
-        progressBar.style.width = '30%';
-        statusLabel.textContent = "Connecting to Pinterest proxy...";
-        
+        progressBar.style.width = '15%';
+        statusLabel.textContent = "Resolving Pinterest URL...";
+
+        let rawImages = [];
+
         try {
-            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+            // First fetch target page via corsproxy
+            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(inputUrl)}`;
             const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error("Network error or board is private.");
-            
-            progressBar.style.width = '70%';
-            statusLabel.textContent = "Parsing image data...";
-            const text = await response.text();
-            
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(text, "text/xml");
-            
-            const items = xml.querySelectorAll("item");
-            let rawImages = [];
-            
-            items.forEach(item => {
-                const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
-                const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
-                
-                const srcMatch = desc.match(/src="([^"]+)"/);
-                if (srcMatch && srcMatch[1]) {
-                    // Pinterest often hosts highest res at "originals" or "736x"
-                    const highRes = srcMatch[1].replace(/236x|474x/, '736x');
-                    rawImages.push({ imgUrl: highRes, link: link });
+            if (!response.ok) throw new Error("Could not reach Pinterest link.");
+
+            progressBar.style.width = '45%';
+            statusLabel.textContent = "Extracting pin & board data...";
+            const htmlText = await response.text();
+
+            // 1. Try parsing directly as RSS if XML
+            if (htmlText.includes('<rss') || htmlText.includes('<feed')) {
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(htmlText, "text/xml");
+                const items = xml.querySelectorAll("item");
+                items.forEach(item => {
+                    const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
+                    const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
+                    const srcMatch = desc.match(/src="([^"]+)"/);
+                    if (srcMatch && srcMatch[1]) {
+                        const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                        rawImages.push({ imgUrl: highRes, link: link });
+                    }
+                });
+            } else {
+                // 2. Extract image URLs directly from HTML (shortlink redirect target or pin page)
+                const matches = htmlText.match(/https:\/\/i\.pinimg\.com\/(?:736x|originals|474x|236x)\/[a-zA-Z0-9_\-\/]+\.(?:jpg|png|webp)/g) || [];
+                const uniqueUrls = new Set();
+                matches.forEach(url => {
+                    if (!url.includes('user/') && !url.includes('default_')) {
+                        uniqueUrls.add(url.replace(/236x|474x|originals/, '736x'));
+                    }
+                });
+
+                // 3. Also check if there's a canonical board URL in the shortlink HTML to fetch full RSS
+                const boardMatch = htmlText.match(/https:\/\/(?:[a-z]+\.)?pinterest\.com\/([a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)\/?/);
+                if (boardMatch && boardMatch[1] && !boardMatch[1].startsWith('pin/')) {
+                    statusLabel.textContent = `Found Board: ${boardMatch[1]}. Fetching RSS...`;
+                    const rssUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://www.pinterest.com/' + boardMatch[1] + '.rss')}`;
+                    try {
+                        const rssRes = await fetch(rssUrl);
+                        if (rssRes.ok) {
+                            const rssText = await rssRes.text();
+                            const parser = new DOMParser();
+                            const xml = parser.parseFromString(rssText, "text/xml");
+                            const items = xml.querySelectorAll("item");
+                            items.forEach(item => {
+                                const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
+                                const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
+                                const srcMatch = desc.match(/src="([^"]+)"/);
+                                if (srcMatch && srcMatch[1]) {
+                                    const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                                    rawImages.push({ imgUrl: highRes, link: link });
+                                }
+                            });
+                        }
+                    } catch(e) { console.log("RSS fetch fallback failed", e); }
                 }
-            });
-            
-            progressBar.style.width = '85%';
-            statusLabel.textContent = "Analyzing image quality... (Discarding low-res)";
-            
-            // Filter out low quality images by checking natural dimensions
+
+                // If RSS yielded nothing, use extracted page images
+                if (rawImages.length === 0 && uniqueUrls.size > 0) {
+                    uniqueUrls.forEach(imgUrl => {
+                        rawImages.push({ imgUrl: imgUrl, link: inputUrl });
+                    });
+                }
+            }
+
+            progressBar.style.width = '75%';
+            statusLabel.textContent = `Analyzing ${rawImages.length} images for HD quality...`;
+
+            // Filter images by quality
             let newImages = [];
             await Promise.all(rawImages.map(imgData => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.onload = () => {
-                        // Strict quality check: >= 700px width/height
-                        if (img.naturalWidth >= 700 || img.naturalHeight >= 700) {
+                        if (img.naturalWidth >= 400 || img.naturalHeight >= 400) {
                             newImages.push(imgData);
                         }
                         resolve();
                     };
-                    img.onerror = () => resolve(); // Ignore broken links
+                    img.onerror = () => resolve();
                     img.src = imgData.imgUrl;
                 });
             }));
-            
+
             progressBar.style.width = '100%';
-            
+
             if(newImages.length === 0) {
-                statusLabel.textContent = "No high-quality images found. Ensure board has HD content.";
+                statusLabel.textContent = "⚠️ No high-res images found at this link.";
             } else {
                 if(clearExisting) {
                     config.images = newImages;
@@ -260,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderImages();
-                statusLabel.textContent = `✅ Success! ${newImages.length} HD images imported (Filtered out low-res).`;
+                statusLabel.textContent = `✅ Success! ${newImages.length} HD images imported from Pinterest!`;
                 document.getElementById('pinterest-url').value = '';
             }
         } catch (err) {
@@ -269,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             progressContainer.style.display = 'none';
-        }, 2000);
+        }, 3000);
         
         btn.innerHTML = 'Scan & Import';
         btn.disabled = false;

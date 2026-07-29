@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NaberLa - Admin Panel</title>
-    <link rel="stylesheet" href="admin.css?v=6">
+    <link rel="stylesheet" href="admin.css?v=10">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="login-container">
         <div class="login-box">
             <h2>Admin Login</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
+            <input type="text" id="username" placeholder="Username" value="admin">
+            <input type="password" id="password" placeholder="Password" value="123">
             <button id="login-btn">Login</button>
             <p id="login-error" class="error"></p>
         </div>
@@ -21,13 +21,32 @@
     <div id="admin-dashboard" class="hidden">
         <header class="admin-header">
             <h1>NaberLa Admin</h1>
-            <a href="index.html" class="btn">View Site</a>
-            <button id="logout-btn" class="btn">Logout</button>
+            <div>
+                <a href="index.html" class="btn" style="margin-right:10px;">View Site</a>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
         </header>
 
         <div class="admin-content">
+            <section class="card" style="background:#1a1025; border:1px solid #8a2be2;">
+                <h2 style="color:#d8b4fe;">Pinterest Auto-Scraper</h2>
+                <div class="input-group" style="flex-direction:column; gap:10px;">
+                    <input type="text" id="pinterest-url" placeholder="Paste Pinterest Board or Pin URL (e.g. https://pin.it/... or board link)">
+                    <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="clear-existing" checked> Clear existing images before adding new ones
+                    </label>
+                    <button id="scan-btn" class="btn primary" style="background:#8a2be2;">Scan & Import</button>
+                    
+                    <div id="scan-progress-container" style="display:none; width:100%; background:#222; border-radius:4px; height:8px; overflow:hidden; margin-top:5px;">
+                        <div id="scan-progress-bar" style="width:0%; height:100%; background:#8a2be2; transition:width 0.3s ease;"></div>
+                    </div>
+                    
+                    <p id="scan-status" style="color:#d8b4fe; font-size:0.95rem; font-weight:bold; display:none; margin:0;">Scanning...</p>
+                </div>
+            </section>
+
             <section class="card">
-                <h2>Playlist (MP3 or YouTube)</h2>
+                <h2 id="music-count-header">Playlist (MP3 or YouTube)</h2>
                 <div class="input-group" style="flex-direction:row;">
                     <input type="text" id="new-music-url" placeholder="https://youtube.com/... or .mp3" style="flex:1;">
                     <button id="add-music-btn" class="btn primary">Add Song</button>
@@ -35,35 +54,17 @@
                 <ul id="music-list" class="item-list"></ul>
             </section>
 
-            <section class="card" style="background:#1a1025; border-color:#8a2be2;">
-                <h2 style="color:#d8b4fe;">Pinterest Auto-Scraper</h2>
-                <div class="input-group" style="flex-direction:column; gap:10px;">
-                    <input type="text" id="pinterest-url" placeholder="Paste Pinterest Board URL (e.g. https://tr.pinterest.com/kutaykarabudak/nabrla/)">
-                    <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="clear-existing" checked> Clear existing images before adding new ones
-                    </label>
-                    <button id="scan-btn" class="btn primary" style="background:#8a2be2;">Scan & Import</button>
-                    
-                    <div id="scan-progress-container" style="display:none; width:100%; background:#222; border-radius:4px; height:8px; overflow:hidden; margin-top:5px;">
-                        <div id="scan-progress-bar" style="width:50%; height:100%; background:#8a2be2; transition:width 0.3s ease; animation: pulse 1s infinite alternate;"></div>
-                    </div>
-                    
-                    <p id="scan-status" style="color:#d8b4fe; font-size:0.95rem; font-weight:bold; display:none; margin:0;">Scanning...</p>
+            <section class="card" style="grid-column: span 2;">
+                <h2 id="image-count-header">Image Feed Links</h2>
+                <div class="input-group" style="flex-direction:row; gap:10px;">
+                    <input type="text" id="new-image-url" placeholder="Image URL (https://...)" style="flex:2;">
+                    <input type="text" id="new-target-url" placeholder="Target Link (https://pinterest.com/pin/...)" style="flex:2;">
+                    <button id="add-image-btn" class="btn primary" style="flex:1;">Add Image</button>
                 </div>
-                <style>@keyframes pulse { from { opacity:0.6; } to { opacity:1; } }</style>
-            </section>
-
-            <section class="card">
-                <h2>Image Feed Links</h2>
-                <div class="input-group" style="flex-direction:column; gap:10px;">
-                    <input type="text" id="new-image-url" placeholder="Image URL (e.g. assets/model1.jpg or https://...)">
-                    <input type="text" id="new-target-url" placeholder="Target Link (e.g. https://instagram.com/profile)">
-                    <button id="add-image-btn" class="btn primary">Add Image</button>
-                </div>
-                <ul id="image-list" class="item-list"></ul>
+                <ul id="image-list" class="item-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:10px; max-height:500px;"></ul>
             </section>
         </div>
     </div>
-    <script src="admin2.js?v=1"></script>
+    <script src="admin2.js?v=10"></script>
 </body>
 </html>
