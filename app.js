@@ -186,7 +186,7 @@
         return pool.pop();
     }
 
-    /* ─── RENDER CARDS ─── */
+    /* ─── RENDER CARDS (Staggered Dynamic Row Spans) ─── */
     let rendered = 0;
     function addCards(n){
         if(!cfg.images.length) return;
@@ -198,13 +198,37 @@
 
             // 2 & 3 Column Wide Cards
             const r = Math.random();
-            if(r > 0.85)      el.className = 'card span3';
-            else if(r > 0.55) el.className = 'card span2';
-            else               el.className = 'card';
+            let colSpan = 1;
+            if(r > 0.85)      { el.className = 'card span3'; colSpan = 3; }
+            else if(r > 0.52) { el.className = 'card span2'; colSpan = 2; }
+            else               { el.className = 'card'; colSpan = 1; }
+
+            // Staggered dynamic row span calculation from image aspect ratio
+            const w = img.w || img.width || 736;
+            const h = img.h || img.height || 1000;
+            const ratio = h / w;
+            const colWidth = ((window.innerWidth || 1400) - 60) / 5 * colSpan;
+            const estHeight = colWidth * ratio;
+            const rowSpan = Math.max(16, Math.min(85, Math.ceil((estHeight + 10) / (8 + 10))));
+            el.style.gridRowEnd = `span ${rowSpan}`;
 
             const src = img.u.replace(/\/(?:236x|474x|736x)\//,'/originals/');
             el.innerHTML = `<img src="${src}" alt="" loading="lazy">` +
                 (img.l ? `<div class="card-overlay">🔗 View</div>` : '');
+
+            // Fine-tune row span when image loads
+            const imgEl = el.querySelector('img');
+            if(imgEl){
+                imgEl.onload = () => {
+                    if(imgEl.naturalWidth > 0){
+                        const exactRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+                        const exactHeight = colWidth * exactRatio;
+                        const exactSpan = Math.max(16, Math.min(95, Math.ceil((exactHeight + 10) / (8 + 10))));
+                        el.style.gridRowEnd = `span ${exactSpan}`;
+                    }
+                };
+            }
+
             if(img.l) el.addEventListener('click',()=>window.open(img.l,'_blank'));
             el.addEventListener('mouseenter',()=>hovering=true);
             el.addEventListener('mouseleave',()=>hovering=false);
