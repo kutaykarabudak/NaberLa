@@ -3,25 +3,10 @@
     "use strict";
     const $ = id => document.getElementById(id);
 
-    /* ─── LOGIN ─── */
-    $('btn-login').addEventListener('click',()=>{
-        if($('inp-user').value==='admin' && $('inp-pass').value==='123'){
-            sessionStorage.setItem('isAdmin','1');
-            show();
-        } else {
-            $('login-err').textContent='Wrong credentials';
-        }
-    });
-    $('btn-logout').addEventListener('click',()=>{
-        sessionStorage.removeItem('isAdmin');
-        $('login-page').style.display='flex';
-        $('dashboard').style.display='none';
-    });
-    if(sessionStorage.getItem('isAdmin')==='1') show();
-
-    function show(){
-        $('login-page').style.display='none';
-        $('dashboard').style.display='block';
+    /* ─── INITIALIZATION ─── */
+    document.addEventListener('DOMContentLoaded', refresh);
+    // Also run immediately if DOM is ready
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
         refresh();
     }
 
