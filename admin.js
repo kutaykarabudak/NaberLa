@@ -35,12 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
             'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
             'https://www.youtube.com/watch?v=5qap5aO4i9A'
         ],
-    const defaultConfig = {
-        speed: 3,
-        music: [
-            'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
-            'https://www.youtube.com/watch?v=5qap5aO4i9A'
-        ],
         images: [
             { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' },
             { imgUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/romeestrijd/' },
