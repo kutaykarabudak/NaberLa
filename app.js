@@ -24,15 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let isHovering = false;
     let isScrollManuallyPaused = false;
 
-    // Custom Logo Mouse Cursor Tracking
+    // Custom Logo Mouse Cursor Tracking (top-left anchor point)
     const customCursor = document.getElementById('custom-cursor');
     if (customCursor) {
-        window.addEventListener('mousemove', (e) => {
-            customCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+        document.addEventListener('mousemove', (e) => {
+            // Position cursor so the top-left corner of the rotated image is at mouse tip
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
         });
     }
 
-    // Config
+    // Config from localStorage
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
     const defaultImages = [
@@ -66,11 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
         config.music = defaultMusic;
     }
 
+    // Normalize image objects & upgrade to HD
     config.images = config.images.map(img => {
         let url = typeof img === 'string' ? img : img.imgUrl;
-        let link = typeof img === 'object' ? img.link : '';
+        let link = typeof img === 'object' ? (img.link || '') : '';
+        let width = typeof img === 'object' ? (img.width || 0) : 0;
+        let height = typeof img === 'object' ? (img.height || 0) : 0;
         url = url.replace(/\/(?:236x|474x|736x)\//, '/originals/');
-        return { imgUrl: url, link: link };
+        return { imgUrl: url, link: link, width: width, height: height };
     });
 
     speedControl.value = config.speed || 3;
@@ -150,14 +155,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if(ytId) {
                 currentMode = 'youtube';
                 if (ytLinkEl) { ytLinkEl.href = url; ytLinkEl.classList.remove('hidden'); }
-                if (titleEl) titleEl.innerText = "Playing Music...";
+                if (titleEl) titleEl.innerText = "Loading YouTube...";
                 
                 if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
                     ytPlayer.loadVideoById(ytId);
                     if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(isMuted ? 0 : 50);
                     if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
                 } else {
-                    setTimeout(() => playTrack(index), 500);
+                    // YT API not ready yet, retry
+                    setTimeout(() => playTrack(index), 1000);
                 }
             } else {
                 currentMode = 'html';
@@ -220,11 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPrev.addEventListener('click', playPrevTrack);
     btnMute.addEventListener('click', toggleMute);
 
-    // NO-REPEAT SHUFFLE QUEUE LOGIC
+    // NO-REPEAT SHUFFLE QUEUE LOGIC (Fisher-Yates)
     let imagePool = [];
     function getNextImageItem() {
         if (imagePool.length === 0) {
-            // Refill & Shuffle Pool using Fisher-Yates
             imagePool = [...config.images];
             for (let i = imagePool.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -234,7 +239,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return imagePool.pop();
     }
 
-    // RENDER POSTS IN DYNAMIC 5-COLUMN COLLAGE
+    // Decide column span based on image dimensions
+    function getColSpan(item) {
+        const w = item.width || 0;
+        const h = item.height || 0;
+        
+        // Large landscape images → 3 columns
+        if (w > 1200 && w > h * 1.3) return 'col-span-3';
+        // Wide or high-res images → 2 columns
+        if (w > 800 || (w > h * 1.1 && w > 600)) return 'col-span-2';
+        
+        // Random variety for remaining: 35% get 2-col, 10% get 3-col
+        const rand = Math.random();
+        if (rand > 0.90) return 'col-span-3';
+        if (rand > 0.55) return 'col-span-2';
+        return 'col-span-1';
+    }
+
+    // RENDER POSTS 
     let totalRendered = 0;
     const renderPosts = (count = 12) => {
         if(!config.images || config.images.length === 0) return; 
@@ -242,8 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < count; i++) {
             totalRendered++;
             
-            // AdSense placeholder block every 10 images
-            if (totalRendered % 10 === 0) {
+            // AdSense placeholder every 15 images
+            if (totalRendered % 15 === 0) {
                 const adBlock = document.createElement('article');
                 adBlock.className = 'post col-span-2 adsense-container';
                 adBlock.style.background = '#111';
@@ -266,18 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!item) continue;
 
             const article = document.createElement('article');
-            
-            // Weighted random column spans (including 4-column large feature cards!)
-            const randCol = Math.random();
-            let colClass = 'col-span-1';
-            if (randCol > 0.85) {
-                colClass = 'col-span-4'; // 15% chance for massive 4-column span!
-            } else if (randCol > 0.65) {
-                colClass = 'col-span-3'; // 20% chance
-            } else if (randCol > 0.35) {
-                colClass = 'col-span-2'; // 30% chance
-            }
-            
+            const colClass = getColSpan(item);
             article.className = `post ${colClass}`;
             
             const hdImgUrl = item.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
@@ -347,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     requestAnimationFrame(scrollLoop);
 
+    // PLAY BUTTON HANDLER — starts music & lifts curtain
     if (enterBtn) {
         enterBtn.addEventListener('click', (e) => {
             if (e) e.preventDefault();

@@ -19,13 +19,13 @@ body { background-color: var(--bg-color); color: var(--text-primary); font-famil
     width: 32px; height: 32px;
     pointer-events: none;
     z-index: 100000;
-    transform: translate(-50%, -50%);
-    transition: transform 0.04s ease-out;
+    transform: translate(-100px, -100px);
 }
 #custom-cursor img {
     width: 100%; height: 100%;
     object-fit: contain;
-    transform: rotate(-45deg); /* Perfectly rotates bikini heart tip to point TOP-LEFT cursor direction */
+    /* Original image: sharp tip points DOWN. rotate(180deg) flips it to point UP-LEFT */
+    transform: rotate(180deg);
     filter: drop-shadow(0 0 8px rgba(224, 175, 150, 0.9));
 }
 
@@ -119,7 +119,7 @@ body { background-color: var(--bg-color); color: var(--text-primary); font-famil
     100% { filter: drop-shadow(0 0 15px rgba(224, 175, 150, 0.4)); transform: scale(1); }
 }
 
-/* Pure Skin-Tone Play Triangle (No Outer Circle) - Perfectly Centered */
+/* Pure Skin-Tone Play Triangle - Perfectly Centered */
 .glow-play-btn, .pure-play-btn, #enter-btn {
     position: relative;
     background: transparent !important;
@@ -130,7 +130,7 @@ body { background-color: var(--bg-color); color: var(--text-primary); font-famil
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 20px 20px 20px 26px !important; /* Optical offset for play triangle alignment */
+    padding: 20px !important;
     margin: 15px auto 0 auto !important;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -172,12 +172,12 @@ header {
 }
 .logo { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.5px; }
 
-/* 5-Column Grid with Original Aspect Ratio (No Cropping) */
+/* 5-Column Masonry Grid */
 .feed { 
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 20px; 
-    padding: 100px 20px 100px; 
+    gap: 12px; 
+    padding: 100px 16px 100px; 
     width: 100%; 
     align-items: start;
 }
@@ -190,17 +190,12 @@ header {
 .post.col-span-1 { grid-column: span 1; }
 .post.col-span-2 { grid-column: span 2; }
 .post.col-span-3 { grid-column: span 3; }
-.post.col-span-4 { grid-column: span 4; }
-.post.col-span-5 { grid-column: span 5; }
 
-@media (max-width: 1500px) {
-    .post.col-span-4, .post.col-span-5 { grid-column: span 3; }
-}
 @media (max-width: 1100px) {
-    .post.col-span-3, .post.col-span-4, .post.col-span-5 { grid-column: span 2; }
+    .post.col-span-3 { grid-column: span 2; }
 }
 @media (max-width: 750px) {
-    .post.col-span-2, .post.col-span-3, .post.col-span-4, .post.col-span-5 { grid-column: span 1; }
+    .post.col-span-2, .post.col-span-3 { grid-column: span 1; }
 }
 
 /* Post Container & Natural Full Image Aspect Ratio */
@@ -216,14 +211,17 @@ header {
 
 @keyframes fadeUp { to { opacity: 1; } }
 
+/* BLACK & WHITE by default, COLOR on hover */
 .post .post-media { 
     width: 100%; 
     height: auto; 
     display: block; 
-    object-fit: contain; /* Full aspect ratio without cropping */
-    transition: transform 0.4s ease; 
+    object-fit: contain;
+    filter: grayscale(100%);
+    transition: filter 0.6s ease, transform 0.4s ease; 
 }
 .post:hover .post-media { 
+    filter: grayscale(0%);
     transform: scale(1.02); 
 }
 
