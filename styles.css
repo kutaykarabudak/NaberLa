@@ -156,6 +156,40 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:h
     transform:translateZ(0);     /* GPU Hardware Acceleration */
     will-change:transform;
 }
+
+/* ===== ADVERTISEMENT CARDS ===== */
+.ad-card {
+    background: rgba(18, 14, 28, 0.95) !important;
+    border: 1px dashed rgba(224, 175, 150, 0.5) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ad-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+}
+.ad-badge {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--skin);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.ad-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
 @keyframes fadeIn{to{opacity:1;}}
 
 .card img,.card video{

@@ -186,12 +186,32 @@
         return pool.pop();
     }
 
-    /* ─── RENDER CARDS (Staggered Dynamic Row Spans) ─── */
+    /* ─── RENDER CARDS (Staggered Dynamic Row Spans & AdSense Cards) ─── */
     let rendered = 0;
     function addCards(n){
         if(!cfg.images.length) return;
         for(let i=0;i<n;i++){
             rendered++;
+
+            // Inject AdSense Card every 12 images
+            if (rendered > 0 && rendered % 12 === 0) {
+                const adEl = document.createElement('article');
+                adEl.className = 'card ad-card span2';
+                adEl.style.gridRowEnd = 'span 32';
+                adEl.innerHTML = `
+                    <div class="ad-box">
+                        <span class="ad-badge">ADVERTISEMENT</span>
+                        <div class="ad-content">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#e0af96" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h10M7 9h6"/></svg>
+                            <span>Google AdSense</span>
+                        </div>
+                    </div>
+                `;
+                adEl.addEventListener('mouseenter',()=>hovering=true);
+                adEl.addEventListener('mouseleave',()=>hovering=false);
+                feed.appendChild(adEl);
+            }
+
             const img = nextImage();
             if(!img) continue;
             const el = document.createElement('article');
