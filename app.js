@@ -29,16 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
     const defaultImages = [
-        { imgUrl: 'https://images.unsplash.com/photo-1520635489814-1e0e5a953e1a?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1510832198440-a52376950479?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1500336624523-d727130c3328?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1523456382101-7053075fb13c?auto=format&fit=crop&q=80&w=800', link: '' },
-        { imgUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800', link: '' }
+        { imgUrl: 'https://i.pinimg.com/736x/82/6b/b3/826bb3c72d371585ced968383b77b8b1.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/49/48/c6/4948c6be445d68f48115e4ca1dd55a0b.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/8c/1e/37/8c1e3751ddad8a8a334af0c642aed5ab.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/77/bb/03/77bb038dd44f4826acdbb9760c5cbd7e.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/dd/ff/93/ddff936573861ec90b9a2f02f00a971f.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/8a/97/61/8a9761a6daefb42ab774102dfa9a41ad.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/00/22/f9/0022f96edecf8f1bb4f3fe0d585890de.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/3c/32/77/3c3277d643902f7caf19713486d48b6f.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/b3/7b/ba/b37bba8d745479dc2aec22a2c29c4d7e.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/d9/ab/ee/d9abeec40f0add52fa1cf3742cc8f93f.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/2f/75/1e/2f751ece5231ba84d0bd9dd5bfe0dad8.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/9d/27/63/9d27636c36a209c8ad3641b42e4a5fc1.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/e0/c1/04/e0c104c98131f28c79f904f12c829130.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/9b/cf/e8/9bcfe8413e312a001cb5eed39983ce41.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/fb/42/d8/fb42d851861cca2d4d1fe930c259085b.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/d6/45/8e/d6458e53687a7bc14ee8637af1582fda.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/c8/32/a8/c832a833aa4cdd3f61cb4134b502c19b.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/21/de/f5/21def5615b425b9f59256d579020305f.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/39/2b/a2/392ba25f3b8fd871923e7a30ee3ebd4b.jpg', link: '' },
+        { imgUrl: 'https://i.pinimg.com/736x/81/a4/cd/81a4cd5d2b9b212c8e81941a377cfa7b.jpg', link: '' }
     ];
 
     // Migration for app side
@@ -46,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
     }
     
-    if(!config.images || config.images.length < 5) {
+    if(!config.images || config.images.length < 5 || (config.images[0] && config.images[0].imgUrl.includes('unsplash.com'))) {
         config.images = defaultImages;
         localStorage.setItem('naberlaConfig', JSON.stringify(config));
     }
