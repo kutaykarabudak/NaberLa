@@ -195,12 +195,7 @@
             const img = nextImage();
             if(!img) continue;
             const el = document.createElement('article');
-
-            // Random span distribution: ~35% span2, ~12% span3, rest span1
-            const r = Math.random();
-            if(r > 0.88)      el.className = 'card span3';
-            else if(r > 0.53) el.className = 'card span2';
-            else               el.className = 'card';
+            el.className = 'card';
 
             const src = img.u.replace(/\/(?:236x|474x|736x)\//,'/originals/');
             el.innerHTML = `<img src="${src}" alt="" loading="lazy">` +
