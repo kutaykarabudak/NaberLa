@@ -195,7 +195,12 @@
             const img = nextImage();
             if(!img) continue;
             const el = document.createElement('article');
-            el.className = 'card';
+
+            // 2 & 3 Column Wide Cards
+            const r = Math.random();
+            if(r > 0.85)      el.className = 'card span3';
+            else if(r > 0.55) el.className = 'card span2';
+            else               el.className = 'card';
 
             const src = img.u.replace(/\/(?:236x|474x|736x)\//,'/originals/');
             el.innerHTML = `<img src="${src}" alt="" loading="lazy">` +
@@ -208,18 +213,19 @@
     }
     addCards(18);
 
-    /* ─── AUTO-SCROLL (Delta-time Smooth Interpolation) ─── */
+    /* ─── AUTO-SCROLL (Ultra Smooth 60fps Easing) ─── */
     let lastTime = 0;
     function tick(now){
         if(!lastTime) lastTime = now;
-        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        const dt = Math.min((now - lastTime) / 1000, 0.05);
         lastTime = now;
 
         const target = !entered ? 1.0 :
                         (hovering || scrollPaused) ? 0 :
-                        (parseFloat(speedSlider.value)||3) * 0.8;
+                        (parseFloat(speedSlider.value)||3) * 0.75;
         
-        speed += (target - speed) * 0.08;
+        // Ultra-smooth lerp easing to prevent abrupt speed jumps
+        speed += (target - speed) * 0.03;
         scrollAcc += speed * 60 * dt;
 
         if(scrollAcc >= 1){
@@ -231,7 +237,7 @@
         // Infinite scroll
         if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 900 && !loading){
             loading = true;
-            setTimeout(()=>{ addCards(6); loading=false; }, 50);
+            setTimeout(()=>{ addCards(6); loading=false; }, 60);
         }
         requestAnimationFrame(tick);
     }
