@@ -130,32 +130,53 @@
     /* ─── PROXY FETCH ─── */
     async function proxyFetch(url){
         const proxies=[
-            u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-            u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-            u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+            async u => {
+                const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
+                if(r.ok){ const d = await r.json(); return d.contents || ''; }
+                throw new Error('allorigins failed');
+            },
+            async u => {
+                const r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
+                if(r.ok) return await r.text();
+                throw new Error('corsproxy failed');
+            },
+            async u => {
+                const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`);
+                if(r.ok) return await r.text();
+                throw new Error('codetabs failed');
+            }
         ];
         for(const p of proxies){
             try{
-                const ctrl=new AbortController();
-                const t=setTimeout(()=>ctrl.abort(),12000);
-                const r=await fetch(p(url),{signal:ctrl.signal});
-                clearTimeout(t);
-                if(r.ok){ const txt=await r.text(); if(txt.length>100) return txt; }
-            }catch(e){ console.warn('proxy fail',e.message); }
+                const txt = await p(url);
+                if(txt && txt.length > 50) return txt;
+            }catch(e){ console.warn('proxy fail', e.message); }
         }
-        throw new Error('All proxies failed');
+        throw new Error('All proxies failed. Try entering the full Pinterest board link (e.g. pinterest.com/username/boardname).');
     }
 
     /* ─── RESOLVE pin.it SHORT LINKS ─── */
     async function resolveUrl(url){
         if(!url.includes('pin.it/')) return url;
         try{
-            const html=await proxyFetch(url);
-            const m=html.match(/property="og:url"\s+content="([^"]+)"/);
-            if(m) return m[1];
-            const m2=html.match(/pinterest\.com\/([^"'\s]+\/[^"'\s]+)\/?/);
-            if(m2) return 'https://www.pinterest.com/'+m2[1];
-        }catch(e){}
+            // allorigins JSON API follows HTTP redirects and returns the final target URL in status.url
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+            if(res.ok){
+                const data = await res.json();
+                if(data.status && data.status.url && data.status.url.includes('pinterest.com')){
+                    console.log('Resolved pin.it via status.url:', data.status.url);
+                    return data.status.url;
+                }
+                if(data.contents){
+                    const m = data.contents.match(/property="og:url"\s+content="([^"]+)"/);
+                    if(m) return m[1];
+                    const m2 = data.contents.match(/pinterest\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)/);
+                    if(m2) return 'https://www.pinterest.com/' + m2[1];
+                }
+            }
+        }catch(e){
+            console.warn('Shortlink resolve failed:', e);
+        }
         return url;
     }
 
