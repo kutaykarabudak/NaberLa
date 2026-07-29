@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
                     const srcMatch = desc.match(/src="([^"]+)"/);
                     if (srcMatch && srcMatch[1]) {
-                        const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                        const highRes = srcMatch[1].replace(/236x|474x|736x/, 'originals');
                         rawImages.push({ imgUrl: highRes, link: link });
                     }
                 });
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const uniqueUrls = new Set();
                 matches.forEach(url => {
                     if (!url.includes('user/') && !url.includes('default_')) {
-                        uniqueUrls.add(url.replace(/236x|474x|originals/, '736x'));
+                        uniqueUrls.add(url.replace(/236x|474x|736x/, 'originals'));
                     }
                 });
 
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
                             const srcMatch = desc.match(/src="([^"]+)"/);
                             if (srcMatch && srcMatch[1]) {
-                                const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                                const highRes = srcMatch[1].replace(/236x|474x|736x/, 'originals');
                                 rawImages.push({ imgUrl: highRes, link: link });
                             }
                         });

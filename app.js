@@ -21,64 +21,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeContactBtn = document.getElementById('close-contact-btn');
 
     let isLoading = false;
-    let scrollInterval;
     let isHovering = false; // To pause auto-scroll
     let isScrollManuallyPaused = false;
 
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
+    // Reliable high-res default images (Upgraded to /originals/ for maximum 4K HD quality)
     const defaultImages = [
-        { "imgUrl": "https://i.pinimg.com/736x/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
-        { "imgUrl": "https://i.pinimg.com/736x/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
-        { "imgUrl": "https://i.pinimg.com/736x/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/" },
-        { "imgUrl": "https://i.pinimg.com/736x/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/" },
-        { "imgUrl": "https://i.pinimg.com/736x/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/" },
-        { "imgUrl": "https://i.pinimg.com/736x/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108346/" },
-        { "imgUrl": "https://i.pinimg.com/736x/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108353/" },
-        { "imgUrl": "https://i.pinimg.com/736x/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108504/" },
-        { "imgUrl": "https://i.pinimg.com/736x/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108523/" },
-        { "imgUrl": "https://i.pinimg.com/736x/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108344/" },
-        { "imgUrl": "https://i.pinimg.com/736x/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108491/" },
-        { "imgUrl": "https://i.pinimg.com/736x/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108349/" },
-        { "imgUrl": "https://i.pinimg.com/736x/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108415/" },
-        { "imgUrl": "https://i.pinimg.com/736x/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108470/" },
-        { "imgUrl": "https://i.pinimg.com/736x/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108519/" },
-        { "imgUrl": "https://i.pinimg.com/736x/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108503/" },
-        { "imgUrl": "https://i.pinimg.com/736x/6a/b2/f9/6ab2f9c80e7f9a9008e726008bcec226.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108315/" },
-        { "imgUrl": "https://i.pinimg.com/736x/e3/07/81/e307811462d0af5fdd9df164ae34d545.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108499/" },
-        { "imgUrl": "https://i.pinimg.com/736x/55/1e/c2/551ec2ce2f28e990e4eae89901bca8e4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108478/" },
-        { "imgUrl": "https://i.pinimg.com/736x/27/4b/86/274b86945744824db8cf8c28958a81af.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108483/" },
-        { "imgUrl": "https://i.pinimg.com/736x/d6/c6/07/d6c607c90e48886ba0f2d080217bd427.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108408/" },
-        { "imgUrl": "https://i.pinimg.com/736x/49/f8/c3/49f8c3632573533f82ef876cd6a00445.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108302/" },
-        { "imgUrl": "https://i.pinimg.com/736x/8f/3c/f9/8f3cf9a5c0e2346070c6d3e42f233068.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108475/" },
-        { "imgUrl": "https://i.pinimg.com/736x/c0/46/39/c04639fc347b1a3cb1123528e9c13b21.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108492/" },
-        { "imgUrl": "https://i.pinimg.com/736x/35/aa/52/35aa523c1c424a63049669d42256980d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108507/" }
+        { "imgUrl": "https://i.pinimg.com/originals/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
+        { "imgUrl": "https://i.pinimg.com/originals/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
+        { "imgUrl": "https://i.pinimg.com/originals/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/" },
+        { "imgUrl": "https://i.pinimg.com/originals/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/" },
+        { "imgUrl": "https://i.pinimg.com/originals/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/" },
+        { "imgUrl": "https://i.pinimg.com/originals/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108346/" },
+        { "imgUrl": "https://i.pinimg.com/originals/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108353/" },
+        { "imgUrl": "https://i.pinimg.com/originals/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108504/" },
+        { "imgUrl": "https://i.pinimg.com/originals/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108523/" },
+        { "imgUrl": "https://i.pinimg.com/originals/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108344/" },
+        { "imgUrl": "https://i.pinimg.com/originals/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108491/" },
+        { "imgUrl": "https://i.pinimg.com/originals/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108349/" },
+        { "imgUrl": "https://i.pinimg.com/originals/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108415/" },
+        { "imgUrl": "https://i.pinimg.com/originals/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108470/" },
+        { "imgUrl": "https://i.pinimg.com/originals/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108519/" },
+        { "imgUrl": "https://i.pinimg.com/originals/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108503/" }
     ];
 
-    // Migration for app side
-    if (config.images) {
-        config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
-    }
-    
-    if(!config.images || config.images.length < 5 || (config.images[0] && config.images[0].imgUrl.includes('pinimg.com/736x/82/6b/b3'))) {
+    const defaultMusic = [
+        'https://www.youtube.com/watch?v=5qap5aO4i9A',
+        'https://www.youtube.com/watch?v=jfKfPfyJRdk'
+    ];
+
+    if (!config.images || config.images.length < 5) {
         config.images = defaultImages;
         localStorage.setItem('naberlaConfig', JSON.stringify(config));
     }
+    if (!config.music || config.music.length === 0) {
+        config.music = defaultMusic;
+        localStorage.setItem('naberlaConfig', JSON.stringify(config));
+    }
 
-    // Set initial speed UI
+    // Convert Pinterest image URLs to high quality /originals/
+    config.images = config.images.map(img => {
+        let url = typeof img === 'string' ? img : img.imgUrl;
+        let link = typeof img === 'object' ? img.link : '';
+        url = url.replace(/\/(?:236x|474x|736x)\//, '/originals/');
+        return { imgUrl: url, link: link };
+    });
+
     speedControl.value = config.speed || 3;
     speedControl.addEventListener('change', () => {
         config.speed = speedControl.value;
         localStorage.setItem('naberlaConfig', JSON.stringify(config));
     });
+
     // MUSIC PLAYER LOGIC
     let currentTrackIndex = 0;
     let isPlaying = false;
     let isMuted = false;
     let ytPlayer = null;
     let isYtReady = false;
-    let currentMode = 'none'; // 'youtube' or 'html'
+    let currentMode = 'none';
 
     const SVG_PLAY = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
     const SVG_PAUSE = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
@@ -87,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize YouTube API
     window.onYouTubeIframeAPIReady = function() {
-        // Use a dummy origin if running on local file system to bypass some YT restrictions
         const originUrl = (window.location.origin === 'file://' || window.location.origin === 'null') 
             ? 'https://localhost' 
             : window.location.origin;
@@ -95,35 +97,27 @@ document.addEventListener('DOMContentLoaded', () => {
         ytPlayer = new YT.Player('yt-player', {
             height: '0', width: '0',
             playerVars: { 
-                'autoplay': 0, 
+                'autoplay': 1, 
                 'controls': 0, 
                 'origin': originUrl 
             },
             events: {
-                'onReady': onPlayerReady,
+                'onReady': () => { isYtReady = true; },
                 'onStateChange': onPlayerStateChange,
-                'onError': onPlayerError
+                'onError': () => playNextTrack()
             }
         });
     };
 
-    function onPlayerError(event) {
-        console.log("YouTube Player Error:", event.data);
-        titleEl.innerText = "Error playing YouTube video";
-        playNextTrack(); // Skip to next track on error
-    }
-
-    function onPlayerReady(event) {
-        isYtReady = true;
-    }
-
     function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED) {
-            playNextTrack();
-        }
+        if (event.data === YT.PlayerState.ENDED) playNextTrack();
         if (event.data === YT.PlayerState.PLAYING) {
             updatePlayBtn(true);
-            titleEl.innerText = ytPlayer.getVideoData().title || "YouTube Audio";
+            try {
+                if (ytPlayer && ytPlayer.getVideoData) {
+                    titleEl.innerText = ytPlayer.getVideoData().title || "NaberLa Music";
+                }
+            } catch(e){}
         }
     }
 
@@ -146,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentTrackIndex = index % config.music.length;
             const url = config.music[currentTrackIndex];
             
-            // Stop current
             try { htmlAudio.pause(); } catch(e){}
             try {
                 if(isYtReady && ytPlayer && typeof ytPlayer.stopVideo === 'function') {
@@ -157,20 +150,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const ytId = getYouTubeId(url);
             if(ytId) {
                 currentMode = 'youtube';
-                if (ytLinkEl) {
-                    ytLinkEl.href = url;
-                    ytLinkEl.classList.remove('hidden');
-                }
-                if (titleEl) titleEl.innerText = "Loading YouTube...";
+                if (ytLinkEl) { ytLinkEl.href = url; ytLinkEl.classList.remove('hidden'); }
+                if (titleEl) titleEl.innerText = "Playing Music...";
                 
                 if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                    try {
-                        ytPlayer.loadVideoById(ytId);
-                        if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(isMuted ? 0 : 50);
-                        if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
-                    } catch(ytErr) {
-                        console.warn("YouTube play exception:", ytErr);
-                    }
+                    ytPlayer.loadVideoById(ytId);
+                    if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(isMuted ? 0 : 50);
+                    if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
                 } else {
                     setTimeout(() => playTrack(index), 500);
                 }
@@ -183,14 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 htmlAudio.play().catch(e=>console.log("Audio play error", e));
             }
             isPlaying = true;
-        } catch(globalErr) {
-            console.error("Error in playTrack:", globalErr);
+        } catch(err) {
+            console.error("Error playing track:", err);
         }
     }
 
     function togglePlayPause() {
-        if(currentMode === 'youtube' && isYtReady) {
-            const state = ytPlayer.getPlayerState();
+        if(currentMode === 'youtube' && isYtReady && ytPlayer) {
+            const state = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
             if(state === YT.PlayerState.PLAYING) {
                 ytPlayer.pauseVideo();
                 updatePlayBtn(false);
@@ -221,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleMute() {
         isMuted = !isMuted;
-        if(currentMode === 'youtube' && isYtReady) {
+        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.setVolume) {
             ytPlayer.setVolume(isMuted ? 0 : 50);
         }
         htmlAudio.volume = isMuted ? 0 : 0.5;
@@ -233,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlayPause.innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
     }
 
-    // Progress Bar Logic
+    // Progress Bar
     function formatTime(s) {
         if(isNaN(s)) return "0:00";
         const m = Math.floor(s / 60);
@@ -244,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         if(!isPlaying) return;
         let cTime = 0, dur = 0;
-        if(currentMode === 'youtube' && isYtReady && ytPlayer.getCurrentTime) {
+        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.getCurrentTime) {
             cTime = ytPlayer.getCurrentTime() || 0;
             dur = ytPlayer.getDuration() || 0;
         } else if(currentMode === 'html') {
@@ -262,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     seekBar.addEventListener('input', (e) => {
         const t = parseFloat(e.target.value);
-        if(currentMode === 'youtube' && isYtReady && ytPlayer.seekTo) {
+        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.seekTo) {
             ytPlayer.seekTo(t, true);
         } else if(currentMode === 'html') {
             htmlAudio.currentTime = t;
@@ -275,16 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPrev.addEventListener('click', playPrevTrack);
     btnMute.addEventListener('click', toggleMute);
 
-    function extractInstaUsername(url) {
-        if (!url) return 'instagram';
-        const match = url.match(/(?:instagram\.com\/)([A-Za-z0-9_.]+)/);
-        return match ? match[1] : 'instagram';
-    }
-
     // RENDER POSTS
     let totalRendered = 0;
-    const renderPosts = (count = 10) => {
-        if(config.images.length === 0) return; 
+    const renderPosts = (count = 12) => {
+        if(!config.images || config.images.length === 0) return; 
         
         for (let i = 0; i < count; i++) {
             totalRendered++;
@@ -306,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
-                feed.appendChild(adBlock);
+                feedContainer.appendChild(adBlock);
             }
 
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
@@ -315,21 +295,22 @@ document.addEventListener('DOMContentLoaded', () => {
             let sizeClass = sizeClasses[Math.floor(Math.random() * sizeClasses.length)];
             
             const randCol = Math.random();
-            let colClass = 'col-span-1'; // 70% chance
-            
+            let colClass = 'col-span-1';
             if (randCol > 0.90) {
-                colClass = 'col-span-3'; // 10% chance
-                sizeClass = 'large'; // Ensure height is large so it's not a thin strip
+                colClass = 'col-span-3';
+                sizeClass = 'large';
             } else if (randCol > 0.70) {
-                colClass = 'col-span-2'; // 20% chance
+                colClass = 'col-span-2';
             }
             
             article.className = `post ${sizeClass} ${colClass}`;
             
-            const isVideo = randomItem.imgUrl.match(/\.(mp4|webm|ogg)$/i);
+            // Ensure highest HD original resolution
+            const hdImgUrl = randomItem.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
+            const isVideo = hdImgUrl.match(/\.(mp4|webm|ogg)$/i);
             const mediaTag = isVideo 
-                ? `<video src="${randomItem.imgUrl}" autoplay loop muted playsinline class="post-media"></video>`
-                : `<img src="${randomItem.imgUrl}" alt="Feed Media" loading="lazy" class="post-media">`;
+                ? `<video src="${hdImgUrl}" autoplay loop muted playsinline class="post-media"></video>`
+                : `<img src="${hdImgUrl}" alt="Feed Media" loading="lazy" class="post-media">`;
 
             article.onclick = () => {
                 if (randomItem.link) {
@@ -347,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ` : ''}
             `;
             
-            // Hover-to-pause logic
             article.addEventListener('mouseenter', () => isHovering = true);
             article.addEventListener('mouseleave', () => isHovering = false);
 
@@ -359,27 +339,31 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPosts(16);
 
     let isEntered = false;
-    let currentSpeed = 0; // Real-time velocity for easing
+    let currentSpeed = 0;
+    let scrollAccumulator = 0; // Floating point scroll accumulator to guarantee integer pixel scrolling!
 
-    // Auto-Scroll Loop (Runs immediately for ambient preview under curtain)
+    // GUARANTEED SMOOTH AUTO-SCROLL LOOP
     function scrollLoop() {
         const userSpeed = parseFloat(speedControl.value) || 3;
         let targetSpeed = 0;
         
         if (!isEntered) {
-            targetSpeed = 0.8; // Slow ambient flow under curtain
+            targetSpeed = 1.5; // Smooth ambient flow under curtain
         } else if (!isHovering && !isScrollManuallyPaused) {
-            targetSpeed = userSpeed * 0.5;
+            targetSpeed = userSpeed * 0.75;
         }
         
-        currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+        currentSpeed += (targetSpeed - currentSpeed) * 0.1;
+        scrollAccumulator += currentSpeed;
         
-        if (Math.abs(currentSpeed) > 0.02) {
-            window.scrollBy(0, currentSpeed);
+        if (scrollAccumulator >= 1) {
+            const pixelsToScroll = Math.floor(scrollAccumulator);
+            window.scrollBy(0, pixelsToScroll);
+            scrollAccumulator -= pixelsToScroll;
         }
         
         // Infinite scroll check
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 900) {
             if (!isLoading) {
                 isLoading = true;
                 setTimeout(() => {
@@ -391,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(scrollLoop);
     }
     
-    // Start ambient auto-scroll loop immediately
+    // Start auto-scroll loop immediately
     requestAnimationFrame(scrollLoop);
 
     // Initialization & Curtain Lift
@@ -400,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e) e.preventDefault();
             isEntered = true;
             
-            // Immediately lift curtain overlay
             if (startOverlay) {
                 startOverlay.classList.add('curtain-lift');
                 setTimeout(() => {
@@ -408,7 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 900);
             }
 
-            // Start music safely
             try {
                 playTrack(0);
             } catch(musicErr) {
@@ -421,32 +403,19 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollPlayPauseBtn.addEventListener('click', () => {
         isScrollManuallyPaused = !isScrollManuallyPaused;
         scrollPlayPauseBtn.innerHTML = isScrollManuallyPaused 
-            ? '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' // Play icon
-            : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>'; // Pause icon
+            ? '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' 
+            : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
     });
 
-    // Contact Modal Logic
-    if(contactBtn) {
-        contactBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
-    }
-    if(closeContactBtn) {
-        closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
-    }
-    document.getElementById('contact-form')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        alert('Thank you! This is a UI demo, no data was actually sent.');
-        contactModal.classList.add('hidden');
-        e.target.reset();
-    });
+    // Contact Modal
+    if(contactBtn) contactBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
+    if(closeContactBtn) closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
 
-    // Pause auto-scroll on manual interaction
     let scrollTimeout;
     window.addEventListener('wheel', () => {
-        isHovering = true; // Act like hover to trigger braking
+        isHovering = true;
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
-            // Check actual hover state from mouse position could be complex, 
-            // so we just reset isHovering and let the mouse events handle it if still hovering
             isHovering = document.querySelector('.post:hover') !== null;
         }, 1500); 
     });
