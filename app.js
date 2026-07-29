@@ -226,6 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPrev.addEventListener('click', playPrevTrack);
     btnMute.addEventListener('click', toggleMute);
 
+    function extractInstaUsername(url) {
+        if (!url) return 'instagram';
+        const match = url.match(/(?:instagram\.com\/)([A-Za-z0-9_.]+)/);
+        return match ? match[1] : 'instagram';
+    }
+
     // RENDER POSTS
     const renderPosts = (count = 10) => {
         if(config.images.length === 0) return; 
@@ -235,9 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const article = document.createElement('article');
             article.className = 'post';
             
-            const id = Math.floor(Math.random() * 1000);
-            const usernames = ['model.life', 'vogue.dreamer', 'style.muse', 'runway_star'];
-            const username = usernames[Math.floor(Math.random() * usernames.length)];
+            const instaUser = extractInstaUsername(randomItem.link);
 
             article.onclick = () => {
                 const url = randomItem.link || 'https://www.instagram.com/';
@@ -246,11 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
             article.innerHTML = `
                 <img src="${randomItem.imgUrl}" alt="Instagram Post" loading="lazy">
                 <div class="post-info">
-                    <img src="https://i.pravatar.cc/150?u=${id}" alt="${username}" class="avatar">
-                    <div class="user-details">
-                        <h3>@${username}</h3>
-                        <p>Fashion | Lifestyle</p>
-                    </div>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="insta-icon"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    <h3>@${instaUser}</h3>
                 </div>
             `;
             
