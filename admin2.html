@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NaberLa - Admin Panel</title>
-    <link rel="stylesheet" href="admin.css?v=10">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css?v=20">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="login-container">
@@ -27,7 +27,7 @@
             </div>
         </header>
 
-        <div class="admin-content">
+        <div class="admin-content" style="max-width: 1200px;">
             <section class="card" style="background:#1a1025; border:1px solid #8a2be2;">
                 <h2 style="color:#d8b4fe;">Pinterest Auto-Scraper</h2>
                 <div class="input-group" style="flex-direction:column; gap:10px;">
@@ -55,16 +55,46 @@
             </section>
 
             <section class="card" style="grid-column: span 2;">
-                <h2 id="image-count-header">Image Feed Links</h2>
-                <div class="input-group" style="flex-direction:row; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 id="image-count-header" style="margin:0;">Image Feed Links (Dimension Table)</h2>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <label style="font-size:0.85rem; color:#aaa;">Sort By:</label>
+                        <select id="sort-images-select" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:6px 12px; border-radius:6px;">
+                            <option value="default">Default Order</option>
+                            <option value="res-desc">Resolution (Highest First)</option>
+                            <option value="width-desc">Width (Widest First)</option>
+                            <option value="height-desc">Height (Tallest First)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group" style="flex-direction:row; gap:10px; margin-bottom:20px;">
                     <input type="text" id="new-image-url" placeholder="Image URL (https://...)" style="flex:2;">
                     <input type="text" id="new-target-url" placeholder="Target Link (https://pinterest.com/pin/...)" style="flex:2;">
                     <button id="add-image-btn" class="btn primary" style="flex:1;">Add Image</button>
                 </div>
-                <ul id="image-list" class="item-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:10px; max-height:500px;"></ul>
+
+                <!-- Detailed Image Dimension Table -->
+                <div style="overflow-x:auto;">
+                    <table class="image-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
+                        <thead>
+                            <tr style="background:#0f172a; border-bottom:2px solid #334155; color:#cbd5e1;">
+                                <th style="padding:10px;">Preview</th>
+                                <th style="padding:10px;">Image URL</th>
+                                <th style="padding:10px;">Target Link</th>
+                                <th style="padding:10px;">Dimensions</th>
+                                <th style="padding:10px;">Quality Badge</th>
+                                <th style="padding:10px; text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="image-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>
-    <script src="admin2.js?v=10"></script>
+    <script src="admin2.js?v=20"></script>
 </body>
 </html>

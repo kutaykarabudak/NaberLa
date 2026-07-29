@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeContactBtn = document.getElementById('close-contact-btn');
 
     let isLoading = false;
-    let isHovering = false; // To pause auto-scroll
+    let isHovering = false;
     let isScrollManuallyPaused = false;
 
     // Custom Logo Mouse Cursor Tracking
@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
-    // Reliable high-res default images (Upgraded to /originals/ for maximum 4K HD quality)
     const defaultImages = [
         { "imgUrl": "https://i.pinimg.com/originals/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
         { "imgUrl": "https://i.pinimg.com/originals/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
@@ -60,16 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://www.youtube.com/watch?v=jfKfPfyJRdk'
     ];
 
-    if (!config.images || config.images.length < 5) {
+    if (!config.images || config.images.length === 0) {
         config.images = defaultImages;
-        localStorage.setItem('naberlaConfig', JSON.stringify(config));
     }
     if (!config.music || config.music.length === 0) {
         config.music = defaultMusic;
-        localStorage.setItem('naberlaConfig', JSON.stringify(config));
     }
 
-    // Convert Pinterest image URLs to high quality /originals/
     config.images = config.images.map(img => {
         let url = typeof img === 'string' ? img : img.imgUrl;
         let link = typeof img === 'object' ? img.link : '';
@@ -96,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const SVG_UNMUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
     const SVG_MUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
 
-    // Initialize YouTube API
     window.onYouTubeIframeAPIReady = function() {
         const originUrl = (window.location.origin === 'file://' || window.location.origin === 'null') 
             ? 'https://localhost' 
@@ -104,11 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ytPlayer = new YT.Player('yt-player', {
             height: '0', width: '0',
-            playerVars: { 
-                'autoplay': 1, 
-                'controls': 0, 
-                'origin': originUrl 
-            },
+            playerVars: { 'autoplay': 1, 'controls': 0, 'origin': originUrl },
             events: {
                 'onReady': () => { isYtReady = true; },
                 'onStateChange': onPlayerStateChange,
@@ -203,10 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function playNextTrack() {
-        playTrack(currentTrackIndex + 1);
-    }
-
+    function playNextTrack() { playTrack(currentTrackIndex + 1); }
     function playPrevTrack() {
         if(!config.music || config.music.length === 0) return;
         currentTrackIndex = (currentTrackIndex - 1 + config.music.length) % config.music.length;
@@ -227,49 +215,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlayPause.innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
     }
 
-    // Progress Bar
-    function formatTime(s) {
-        if(isNaN(s)) return "0:00";
-        const m = Math.floor(s / 60);
-        const secs = Math.floor(s % 60).toString().padStart(2, '0');
-        return `${m}:${secs}`;
-    }
-
-    setInterval(() => {
-        if(!isPlaying) return;
-        let cTime = 0, dur = 0;
-        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.getCurrentTime) {
-            cTime = ytPlayer.getCurrentTime() || 0;
-            dur = ytPlayer.getDuration() || 0;
-        } else if(currentMode === 'html') {
-            cTime = htmlAudio.currentTime;
-            dur = htmlAudio.duration;
-        }
-        
-        if(dur > 0) {
-            seekBar.max = dur;
-            seekBar.value = cTime;
-            timeCurrent.innerText = formatTime(cTime);
-            timeTotal.innerText = formatTime(dur);
-        }
-    }, 500);
-
-    seekBar.addEventListener('input', (e) => {
-        const t = parseFloat(e.target.value);
-        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.seekTo) {
-            ytPlayer.seekTo(t, true);
-        } else if(currentMode === 'html') {
-            htmlAudio.currentTime = t;
-        }
-        timeCurrent.innerText = formatTime(t);
-    });
-
     btnPlayPause.addEventListener('click', togglePlayPause);
     btnNext.addEventListener('click', playNextTrack);
     btnPrev.addEventListener('click', playPrevTrack);
     btnMute.addEventListener('click', toggleMute);
 
-    // RENDER POSTS
+    // NO-REPEAT SHUFFLE QUEUE LOGIC
+    let imagePool = [];
+    function getNextImageItem() {
+        if (imagePool.length === 0) {
+            // Refill & Shuffle Pool using Fisher-Yates
+            imagePool = [...config.images];
+            for (let i = imagePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [imagePool[i], imagePool[j]] = [imagePool[j], imagePool[i]];
+            }
+        }
+        return imagePool.pop();
+    }
+
+    // RENDER POSTS IN DYNAMIC 5-COLUMN COLLAGE
     let totalRendered = 0;
     const renderPosts = (count = 12) => {
         if(!config.images || config.images.length === 0) return; 
@@ -277,10 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < count; i++) {
             totalRendered++;
             
-            // Insert AdSense block every 10 images
+            // AdSense placeholder block every 10 images
             if (totalRendered % 10 === 0) {
                 const adBlock = document.createElement('article');
-                adBlock.className = 'post medium col-span-2 adsense-container';
+                adBlock.className = 'post col-span-2 adsense-container';
                 adBlock.style.background = '#111';
                 adBlock.style.display = 'flex';
                 adBlock.style.alignItems = 'center';
@@ -297,26 +262,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedContainer.appendChild(adBlock);
             }
 
-            const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
+            const item = getNextImageItem();
+            if (!item) continue;
+
             const article = document.createElement('article');
-            article.className = 'post';
             
-            // Ensure highest HD original resolution
-            const hdImgUrl = randomItem.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
+            // Weighted random column spans (including 4-column large feature cards!)
+            const randCol = Math.random();
+            let colClass = 'col-span-1';
+            if (randCol > 0.85) {
+                colClass = 'col-span-4'; // 15% chance for massive 4-column span!
+            } else if (randCol > 0.65) {
+                colClass = 'col-span-3'; // 20% chance
+            } else if (randCol > 0.35) {
+                colClass = 'col-span-2'; // 30% chance
+            }
+            
+            article.className = `post ${colClass}`;
+            
+            const hdImgUrl = item.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
             const isVideo = hdImgUrl.match(/\.(mp4|webm|ogg)$/i);
             const mediaTag = isVideo 
                 ? `<video src="${hdImgUrl}" autoplay loop muted playsinline class="post-media"></video>`
                 : `<img src="${hdImgUrl}" alt="Feed Media" loading="lazy" class="post-media">`;
 
             article.onclick = () => {
-                if (randomItem.link) {
-                    window.open(randomItem.link, '_blank');
-                }
+                if (item.link) window.open(item.link, '_blank');
             };
             
             article.innerHTML = `
                 ${mediaTag}
-                ${randomItem.link ? `
+                ${item.link ? `
                 <div class="post-info">
                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="insta-icon"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                     <h3>View Link</h3>
@@ -336,15 +312,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isEntered = false;
     let currentSpeed = 0;
-    let scrollAccumulator = 0; // Floating point scroll accumulator to guarantee integer pixel scrolling!
+    let scrollAccumulator = 0;
 
-    // GUARANTEED SMOOTH AUTO-SCROLL LOOP
     function scrollLoop() {
         const userSpeed = parseFloat(speedControl.value) || 3;
         let targetSpeed = 0;
         
         if (!isEntered) {
-            targetSpeed = 1.5; // Smooth ambient flow under curtain
+            targetSpeed = 1.5;
         } else if (!isHovering && !isScrollManuallyPaused) {
             targetSpeed = userSpeed * 0.75;
         }
@@ -358,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollAccumulator -= pixelsToScroll;
         }
         
-        // Infinite scroll check
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 900) {
             if (!isLoading) {
                 isLoading = true;
@@ -371,10 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(scrollLoop);
     }
     
-    // Start auto-scroll loop immediately
     requestAnimationFrame(scrollLoop);
 
-    // Initialization & Curtain Lift
     if (enterBtn) {
         enterBtn.addEventListener('click', (e) => {
             if (e) e.preventDefault();
@@ -403,7 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
             : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
     });
 
-    // Contact Modal
     if(contactBtn) contactBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
     if(closeContactBtn) closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
 

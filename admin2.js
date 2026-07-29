@@ -34,35 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultConfig = {
         speed: 3,
         music: [
-            'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
-            'https://www.youtube.com/watch?v=5qap5aO4i9A'
+            'https://www.youtube.com/watch?v=5qap5aO4i9A',
+            'https://www.youtube.com/watch?v=jfKfPfyJRdk'
         ],
         images: [
-            { "imgUrl": "https://i.pinimg.com/736x/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
-            { "imgUrl": "https://i.pinimg.com/736x/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
-            { "imgUrl": "https://i.pinimg.com/736x/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/" },
-            { "imgUrl": "https://i.pinimg.com/736x/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/" },
-            { "imgUrl": "https://i.pinimg.com/736x/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/" },
-            { "imgUrl": "https://i.pinimg.com/736x/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108346/" },
-            { "imgUrl": "https://i.pinimg.com/736x/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108353/" },
-            { "imgUrl": "https://i.pinimg.com/736x/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108504/" },
-            { "imgUrl": "https://i.pinimg.com/736x/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108523/" },
-            { "imgUrl": "https://i.pinimg.com/736x/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108344/" },
-            { "imgUrl": "https://i.pinimg.com/736x/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108491/" },
-            { "imgUrl": "https://i.pinimg.com/736x/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108349/" },
-            { "imgUrl": "https://i.pinimg.com/736x/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108415/" },
-            { "imgUrl": "https://i.pinimg.com/736x/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108470/" },
-            { "imgUrl": "https://i.pinimg.com/736x/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108519/" },
-            { "imgUrl": "https://i.pinimg.com/736x/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108503/" },
-            { "imgUrl": "https://i.pinimg.com/736x/6a/b2/f9/6ab2f9c80e7f9a9008e726008bcec226.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108315/" },
-            { "imgUrl": "https://i.pinimg.com/736x/e3/07/81/e307811462d0af5fdd9df164ae34d545.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108499/" },
-            { "imgUrl": "https://i.pinimg.com/736x/55/1e/c2/551ec2ce2f28e990e4eae89901bca8e4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108478/" },
-            { "imgUrl": "https://i.pinimg.com/736x/27/4b/86/274b86945744824db8cf8c28958a81af.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108483/" },
-            { "imgUrl": "https://i.pinimg.com/736x/d6/c6/07/d6c607c90e48886ba0f2d080217bd427.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108408/" },
-            { "imgUrl": "https://i.pinimg.com/736x/49/f8/c3/49f8c3632573533f82ef876cd6a00445.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108302/" },
-            { "imgUrl": "https://i.pinimg.com/736x/8f/3c/f9/8f3cf9a5c0e2346070c6d3e42f233068.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108475/" },
-            { "imgUrl": "https://i.pinimg.com/736x/c0/46/39/c04639fc347b1a3cb1123528e9c13b21.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108492/" },
-            { "imgUrl": "https://i.pinimg.com/736x/35/aa/52/35aa523c1c424a63049669d42256980d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108507/" }
+            { "imgUrl": "https://i.pinimg.com/originals/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/", "width": 736, "height": 946 },
+            { "imgUrl": "https://i.pinimg.com/originals/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/", "width": 736, "height": 946 },
+            { "imgUrl": "https://i.pinimg.com/originals/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/", "width": 736, "height": 946 },
+            { "imgUrl": "https://i.pinimg.com/originals/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/", "width": 736, "height": 946 },
+            { "imgUrl": "https://i.pinimg.com/originals/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/", "width": 736, "height": 946 }
         ]
     };
 
@@ -77,13 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         config = JSON.parse(JSON.stringify(defaultConfig));
     } else {
         if (typeof config.speed === 'undefined') config.speed = defaultConfig.speed;
-        if (!config.images || config.images.length < 5) {
+        if (!config.images || config.images.length === 0) {
             config.images = JSON.parse(JSON.stringify(defaultConfig.images));
         }
-        config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
+        config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '', width: 0, height: 0 } : img);
 
-        if (!config.music) config.music = [...defaultConfig.music];
-        else if (typeof config.music === 'string') config.music = [config.music];
+        if (!config.music || config.music.length === 0) config.music = [...defaultConfig.music];
     }
     
     saveData();
@@ -93,46 +72,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadData() {
-        renderImages();
+        analyzeDimensions();
         renderMusic();
     }
 
-    // Image Handlers
+    // Measure dimensions for all images
+    async function analyzeDimensions() {
+        let updated = false;
+        await Promise.all(config.images.map(item => {
+            return new Promise((resolve) => {
+                if (item.width && item.height) { resolve(); return; }
+                const img = new Image();
+                img.onload = () => {
+                    item.width = img.naturalWidth;
+                    item.height = img.naturalHeight;
+                    updated = true;
+                    resolve();
+                };
+                img.onerror = () => {
+                    item.width = item.width || 736;
+                    item.height = item.height || 1000;
+                    resolve();
+                };
+                img.src = item.imgUrl;
+            });
+        }));
+
+        if (updated) saveData();
+        renderImages();
+    }
+
+    // Sort Images Handler
+    const sortSelect = document.getElementById('sort-images-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            const mode = sortSelect.value;
+            if (mode === 'res-desc') {
+                config.images.sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
+            } else if (mode === 'width-desc') {
+                config.images.sort((a, b) => (b.width || 0) - (a.width || 0));
+            } else if (mode === 'height-desc') {
+                config.images.sort((a, b) => (b.height || 0) - (a.height || 0));
+            }
+            saveData();
+            renderImages();
+        });
+    }
+
+    // Add Image Handler
     document.getElementById('add-image-btn').addEventListener('click', () => {
         const inputImg = document.getElementById('new-image-url');
         const inputTarget = document.getElementById('new-target-url');
         
         if(inputImg.value.trim() !== '') {
-            config.images.push({
-                imgUrl: inputImg.value.trim(),
-                link: inputTarget.value.trim()
+            const url = inputImg.value.trim().replace(/\/(?:236x|474x|736x)\//, '/originals/');
+            config.images.unshift({
+                imgUrl: url,
+                link: inputTarget.value.trim(),
+                width: 0,
+                height: 0
             });
             inputImg.value = '';
             inputTarget.value = '';
             saveData();
-            renderImages();
+            analyzeDimensions();
         }
     });
 
     function renderImages() {
-        const list = document.getElementById('image-list');
+        const tableBody = document.getElementById('image-table-body');
         const header = document.getElementById('image-count-header');
-        if (header) header.innerText = `Image Feed Links (${config.images.length})`;
+        if (header) header.innerText = `Image Feed Links (${config.images.length} HD images)`;
 
-        list.innerHTML = '';
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+
         config.images.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div class="item-content" style="flex-direction:column; align-items:flex-start; width:100%;">
-                    <div style="display:flex; align-items:center; gap:10px; width:100%;">
-                        <img src="${item.imgUrl}" alt="thumb" onerror="this.src='https://via.placeholder.com/40'">
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; color:#fff;">${item.imgUrl}</span>
-                    </div>
-                    ${item.link ? `<small style="color:#aaa; max-width:240px; overflow:hidden; text-overflow:ellipsis;">🔗 ${item.link}</small>` : ''}
-                </div>
-                <button class="btn delete-btn" data-type="img" data-index="${index}">Delete</button>
+            const tr = document.createElement('tr');
+            
+            const w = item.width || 736;
+            const h = item.height || 1000;
+            const pixels = w * h;
+            
+            let badgeClass = 'sd';
+            let badgeText = 'SD';
+            if (pixels >= 1500000 || w >= 1000) {
+                badgeClass = 'hd4k';
+                badgeText = '4K Ultra HD';
+            } else if (pixels >= 600000 || w >= 700) {
+                badgeClass = 'fhd';
+                badgeText = 'Full HD';
+            }
+
+            tr.innerHTML = `
+                <td style="padding:8px;">
+                    <img src="${item.imgUrl}" alt="thumb" style="width:45px; height:45px; object-fit:cover; border-radius:6px;" onerror="this.src='https://via.placeholder.com/45'">
+                </td>
+                <td style="padding:8px; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff;">
+                    <a href="${item.imgUrl}" target="_blank" style="color:#818cf8;">${item.imgUrl}</a>
+                </td>
+                <td style="padding:8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#aaa;">
+                    ${item.link ? `<a href="${item.link}" target="_blank" style="color:#aaa;">🔗 ${item.link}</a>` : '—'}
+                </td>
+                <td style="padding:8px; font-weight:600; color:#e0af96;">
+                    ${w} × ${h} px
+                </td>
+                <td style="padding:8px;">
+                    <span class="quality-badge ${badgeClass}">${badgeText}</span>
+                </td>
+                <td style="padding:8px; text-align:right;">
+                    <button class="delete-btn" data-type="img" data-index="${index}">Delete</button>
+                </td>
             `;
-            list.appendChild(li);
+            tableBody.appendChild(tr);
         });
     }
 
@@ -152,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const header = document.getElementById('music-count-header');
         if (header) header.innerText = `Playlist (${config.music.length} songs)`;
 
+        if (!list) return;
         list.innerHTML = '';
         config.music.forEach((url, index) => {
             const li = document.createElement('li');
@@ -181,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Robust Multi-Proxy Fetcher (tries corsproxy, allorigins, codetabs)
+    // Multi-Proxy Fetcher
     async function fetchWithProxy(targetUrl) {
         const proxies = [
             url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
@@ -189,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
             url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
         ];
 
-        let lastErr = null;
         for (let i = 0; i < proxies.length; i++) {
             try {
                 const proxyUrl = proxies[i](targetUrl);
@@ -199,14 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (text && text.length > 50) return text;
                 }
             } catch(err) {
-                lastErr = err;
-                console.warn(`CORS Proxy ${i+1} failed:`, err);
+                console.warn(`Proxy ${i+1} failed:`, err);
             }
         }
-        throw new Error("Could not reach Pinterest URL via CORS proxies. Ensure URL is valid.");
+        throw new Error("Could not reach Pinterest link via proxy.");
     }
 
-    // Pinterest Universal Scraper
+    // Pinterest Scraper with Original HD resolution extraction
     document.getElementById('scan-btn').addEventListener('click', async () => {
         let inputUrl = document.getElementById('pinterest-url').value.trim();
         if(!inputUrl) { alert("Please enter a Pinterest URL"); return; }
@@ -221,17 +272,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerHTML = '⏳ Scanning...';
         statusLabel.style.display = 'block';
         progressContainer.style.display = 'block';
-        progressBar.style.width = '20%';
+        progressBar.style.width = '25%';
         statusLabel.textContent = "Connecting to Pinterest proxy...";
 
         let rawImages = [];
 
         try {
             const htmlText = await fetchWithProxy(inputUrl);
-            progressBar.style.width = '50%';
-            statusLabel.textContent = "Parsing Pinterest data & images...";
+            progressBar.style.width = '55%';
+            statusLabel.textContent = "Extracting high-res images...";
 
-            // Check if page contains RSS XML
             if (htmlText.includes('<rss') || htmlText.includes('<feed')) {
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(htmlText, "text/xml");
@@ -241,24 +291,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
                     const srcMatch = desc.match(/src="([^"]+)"/);
                     if (srcMatch && srcMatch[1]) {
-                        const highRes = srcMatch[1].replace(/236x|474x|736x/, 'originals');
-                        rawImages.push({ imgUrl: highRes, link: link });
+                        const origUrl = srcMatch[1].replace(/\/(?:236x|474x|736x)\//, '/originals/');
+                        rawImages.push({ imgUrl: origUrl, link: link, width: 0, height: 0 });
                     }
                 });
             } else {
-                // Direct Pin or Shortlink HTML Page Extraction
                 const matches = htmlText.match(/https:\/\/i\.pinimg\.com\/(?:736x|originals|474x|236x)\/[a-zA-Z0-9_\-\/]+\.(?:jpg|png|webp)/g) || [];
                 const uniqueUrls = new Set();
                 matches.forEach(url => {
                     if (!url.includes('user/') && !url.includes('default_')) {
-                        uniqueUrls.add(url.replace(/236x|474x|736x/, 'originals'));
+                        uniqueUrls.add(url.replace(/\/(?:236x|474x|736x)\//, '/originals/'));
                     }
                 });
 
-                // Check for embedded board URL to fetch RSS
                 const boardMatch = htmlText.match(/https:\/\/(?:[a-z]+\.)?pinterest\.com\/([a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)\/?/);
                 if (boardMatch && boardMatch[1] && !boardMatch[1].startsWith('pin/')) {
-                    statusLabel.textContent = `Found Board (${boardMatch[1]}). Fetching full RSS feed...`;
+                    statusLabel.textContent = `Found Board (${boardMatch[1]}). Fetching RSS...`;
                     try {
                         const rssText = await fetchWithProxy('https://www.pinterest.com/' + boardMatch[1] + '.rss');
                         const parser = new DOMParser();
@@ -269,29 +317,30 @@ document.addEventListener('DOMContentLoaded', () => {
                             const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
                             const srcMatch = desc.match(/src="([^"]+)"/);
                             if (srcMatch && srcMatch[1]) {
-                                const highRes = srcMatch[1].replace(/236x|474x|736x/, 'originals');
-                                rawImages.push({ imgUrl: highRes, link: link });
+                                const origUrl = srcMatch[1].replace(/\/(?:236x|474x|736x)\//, '/originals/');
+                                rawImages.push({ imgUrl: origUrl, link: link, width: 0, height: 0 });
                             }
                         });
-                    } catch(e) { console.log("Board RSS fetch failed", e); }
+                    } catch(e) {}
                 }
 
-                // If RSS didn't return images, use extracted image URLs
                 if (rawImages.length === 0 && uniqueUrls.size > 0) {
                     uniqueUrls.forEach(imgUrl => {
-                        rawImages.push({ imgUrl: imgUrl, link: inputUrl });
+                        rawImages.push({ imgUrl: imgUrl, link: inputUrl, width: 0, height: 0 });
                     });
                 }
             }
 
-            progressBar.style.width = '80%';
-            statusLabel.textContent = `Validating quality for ${rawImages.length} images...`;
+            progressBar.style.width = '85%';
+            statusLabel.textContent = `Analyzing dimensions for ${rawImages.length} images...`;
 
             let newImages = [];
             await Promise.all(rawImages.map(imgData => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.onload = () => {
+                        imgData.width = img.naturalWidth;
+                        imgData.height = img.naturalHeight;
                         if (img.naturalWidth >= 300 || img.naturalHeight >= 300) {
                             newImages.push(imgData);
                         }
@@ -305,16 +354,16 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.style.width = '100%';
 
             if(newImages.length === 0) {
-                statusLabel.textContent = "⚠️ No images found at this link.";
+                statusLabel.textContent = "⚠️ No high-res images found.";
             } else {
                 if(clearExisting) {
                     config.images = newImages;
                 } else {
-                    config.images = config.images.concat(newImages);
+                    config.images = newImages.concat(config.images);
                 }
                 saveData();
                 renderImages();
-                statusLabel.textContent = `✅ Success! ${newImages.length} images imported!`;
+                statusLabel.textContent = `✅ Success! ${newImages.length} 4K HD images imported into database!`;
                 document.getElementById('pinterest-url').value = '';
             }
         } catch (err) {
