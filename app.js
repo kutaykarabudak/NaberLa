@@ -7,9 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlAudio = document.getElementById('html-audio');
     const btnPlayPause = document.getElementById('ctrl-playpause');
     const btnNext = document.getElementById('ctrl-next');
+    const btnPrev = document.getElementById('ctrl-prev');
     const btnMute = document.getElementById('ctrl-mute');
     const titleEl = document.getElementById('current-song-title');
     const ytLinkEl = document.getElementById('yt-link');
+    const seekBar = document.getElementById('seek-bar');
+    const timeCurrent = document.getElementById('time-current');
+    const timeTotal = document.getElementById('time-total');
+    const speedControl = document.getElementById('main-scroll-speed');
 
     let isLoading = false;
     let scrollInterval;
@@ -25,7 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!config.images || config.images.length === 0) {
         config.images = [{ imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' }]; // fallback
     }
-    
+
+    // Set initial speed UI
+    speedControl.value = config.speed || 3;
+    speedControl.addEventListener('change', () => {
+        config.speed = speedControl.value;
+        localStorage.setItem('naberlaConfig', JSON.stringify(config));
+    });
     // MUSIC PLAYER LOGIC
     let currentTrackIndex = 0;
     let isPlaying = false;
@@ -153,6 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
         playTrack(currentTrackIndex + 1);
     }
 
+    function playPrevTrack() {
+        if(!config.music || config.music.length === 0) return;
+        currentTrackIndex = (currentTrackIndex - 1 + config.music.length) % config.music.length;
+        playTrack(currentTrackIndex);
+    }
+
     function toggleMute() {
         isMuted = !isMuted;
         if(currentMode === 'youtube' && isYtReady) {
@@ -167,8 +184,46 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlayPause.innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
     }
 
+    // Progress Bar Logic
+    function formatTime(s) {
+        if(isNaN(s)) return "0:00";
+        const m = Math.floor(s / 60);
+        const secs = Math.floor(s % 60).toString().padStart(2, '0');
+        return `${m}:${secs}`;
+    }
+
+    setInterval(() => {
+        if(!isPlaying) return;
+        let cTime = 0, dur = 0;
+        if(currentMode === 'youtube' && isYtReady && ytPlayer.getCurrentTime) {
+            cTime = ytPlayer.getCurrentTime() || 0;
+            dur = ytPlayer.getDuration() || 0;
+        } else if(currentMode === 'html') {
+            cTime = htmlAudio.currentTime;
+            dur = htmlAudio.duration;
+        }
+        
+        if(dur > 0) {
+            seekBar.max = dur;
+            seekBar.value = cTime;
+            timeCurrent.innerText = formatTime(cTime);
+            timeTotal.innerText = formatTime(dur);
+        }
+    }, 500);
+
+    seekBar.addEventListener('input', (e) => {
+        const t = parseFloat(e.target.value);
+        if(currentMode === 'youtube' && isYtReady && ytPlayer.seekTo) {
+            ytPlayer.seekTo(t, true);
+        } else if(currentMode === 'html') {
+            htmlAudio.currentTime = t;
+        }
+        timeCurrent.innerText = formatTime(t);
+    });
+
     btnPlayPause.addEventListener('click', togglePlayPause);
     btnNext.addEventListener('click', playNextTrack);
+    btnPrev.addEventListener('click', playPrevTrack);
     btnMute.addEventListener('click', toggleMute);
 
     // RENDER POSTS
@@ -218,13 +273,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Auto-Scroll Logic
+    let currentSpeed = 0; // Real-time velocity for easing
+    
     function startAutoScroll() {
-        const speedMultiplier = parseInt(config.speed) || 3;
-        const pixelsPerFrame = speedMultiplier * 0.5; 
-        
         function scrollLoop() {
-            if(!isHovering) {
-                window.scrollBy(0, pixelsPerFrame);
+            // Target speed based on UI and hover state
+            const userSpeed = parseFloat(speedControl.value) || 3;
+            const targetSpeed = isHovering ? 0 : (userSpeed * 0.5);
+            
+            // Interpolation (easing) formula
+            currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+            
+            if (Math.abs(currentSpeed) > 0.05) {
+                window.scrollBy(0, currentSpeed);
             }
             
             // Check for bottom to load more
@@ -245,10 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pause auto-scroll on manual interaction
     let scrollTimeout;
     window.addEventListener('wheel', () => {
-        cancelAnimationFrame(scrollInterval);
+        isHovering = true; // Act like hover to trigger braking
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
-            startAutoScroll();
+            // Check actual hover state from mouse position could be complex, 
+            // so we just reset isHovering and let the mouse events handle it if still hovering
+            isHovering = document.querySelector('.post:hover') !== null;
         }, 1500); 
     });
 });

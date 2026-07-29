@@ -72,17 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadData() {
-        const speedEl = document.getElementById('scroll-speed');
-        
-        speedEl.value = config.speed;
-        document.getElementById('speed-display').innerText = config.speed;
-
-        speedEl.addEventListener('input', (e) => {
-            config.speed = e.target.value;
-            document.getElementById('speed-display').innerText = config.speed;
-            saveData();
-        });
-
         renderImages();
         renderMusic();
     }
