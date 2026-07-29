@@ -208,22 +208,30 @@
     }
     addCards(18);
 
-    /* ─── AUTO-SCROLL ─── */
-    function tick(){
-        const target = !entered ? 1.2 :
+    /* ─── AUTO-SCROLL (Delta-time Smooth Interpolation) ─── */
+    let lastTime = 0;
+    function tick(now){
+        if(!lastTime) lastTime = now;
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        const target = !entered ? 1.0 :
                         (hovering || scrollPaused) ? 0 :
-                        (parseFloat(speedSlider.value)||3) * 0.7;
-        speed += (target - speed) * 0.1;
-        scrollAcc += speed;
+                        (parseFloat(speedSlider.value)||3) * 0.8;
+        
+        speed += (target - speed) * 0.08;
+        scrollAcc += speed * 60 * dt;
+
         if(scrollAcc >= 1){
             const px = Math.floor(scrollAcc);
             window.scrollBy(0, px);
             scrollAcc -= px;
         }
+
         // Infinite scroll
-        if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 800 && !loading){
+        if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 900 && !loading){
             loading = true;
-            setTimeout(()=>{ addCards(8); loading=false; },80);
+            setTimeout(()=>{ addCards(6); loading=false; }, 50);
         }
         requestAnimationFrame(tick);
     }
