@@ -347,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialization 
     enterBtn.addEventListener('click', () => {
         startOverlay.classList.add('hidden');
+        startOverlay.style.display = 'none'; // Force hide due to inline flex bugs
         playTrack(0);
         startAutoScroll();
     });
