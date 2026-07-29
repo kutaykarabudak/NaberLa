@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(sessionStorage.getItem('isAdmin') === 'true') {
         showDashboard();
     } else {
-        // Render data immediately so items are visible
         loadData();
     }
 
@@ -124,12 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
         config.images.forEach((item, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <div class="item-content" style="flex-direction:column; align-items:flex-start;">
+                <div class="item-content" style="flex-direction:column; align-items:flex-start; width:100%;">
                     <div style="display:flex; align-items:center; gap:10px; width:100%;">
                         <img src="${item.imgUrl}" alt="thumb" onerror="this.src='https://via.placeholder.com/40'">
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px; color:#fff;">${item.imgUrl}</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; color:#fff;">${item.imgUrl}</span>
                     </div>
-                    ${item.link ? `<small style="color:#aaa;">🔗 ${item.link}</small>` : ''}
+                    ${item.link ? `<small style="color:#aaa; max-width:240px; overflow:hidden; text-overflow:ellipsis;">🔗 ${item.link}</small>` : ''}
                 </div>
                 <button class="btn delete-btn" data-type="img" data-index="${index}">Delete</button>
             `;
@@ -182,7 +181,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Pinterest Universal Scraper (Shortlinks pin.it, Board RSS, Single Pins)
+    // Robust Multi-Proxy Fetcher (tries corsproxy, allorigins, codetabs)
+    async function fetchWithProxy(targetUrl) {
+        const proxies = [
+            url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+        ];
+
+        let lastErr = null;
+        for (let i = 0; i < proxies.length; i++) {
+            try {
+                const proxyUrl = proxies[i](targetUrl);
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const text = await res.text();
+                    if (text && text.length > 50) return text;
+                }
+            } catch(err) {
+                lastErr = err;
+                console.warn(`CORS Proxy ${i+1} failed:`, err);
+            }
+        }
+        throw new Error("Could not reach Pinterest URL via CORS proxies. Ensure URL is valid.");
+    }
+
+    // Pinterest Universal Scraper
     document.getElementById('scan-btn').addEventListener('click', async () => {
         let inputUrl = document.getElementById('pinterest-url').value.trim();
         if(!inputUrl) { alert("Please enter a Pinterest URL"); return; }
@@ -197,22 +221,17 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerHTML = '⏳ Scanning...';
         statusLabel.style.display = 'block';
         progressContainer.style.display = 'block';
-        progressBar.style.width = '15%';
-        statusLabel.textContent = "Resolving Pinterest URL...";
+        progressBar.style.width = '20%';
+        statusLabel.textContent = "Connecting to Pinterest proxy...";
 
         let rawImages = [];
 
         try {
-            // First fetch target page via corsproxy
-            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(inputUrl)}`;
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error("Could not reach Pinterest link.");
+            const htmlText = await fetchWithProxy(inputUrl);
+            progressBar.style.width = '50%';
+            statusLabel.textContent = "Parsing Pinterest data & images...";
 
-            progressBar.style.width = '45%';
-            statusLabel.textContent = "Extracting pin & board data...";
-            const htmlText = await response.text();
-
-            // 1. Try parsing directly as RSS if XML
+            // Check if page contains RSS XML
             if (htmlText.includes('<rss') || htmlText.includes('<feed')) {
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(htmlText, "text/xml");
@@ -227,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } else {
-                // 2. Extract image URLs directly from HTML (shortlink redirect target or pin page)
+                // Direct Pin or Shortlink HTML Page Extraction
                 const matches = htmlText.match(/https:\/\/i\.pinimg\.com\/(?:736x|originals|474x|236x)\/[a-zA-Z0-9_\-\/]+\.(?:jpg|png|webp)/g) || [];
                 const uniqueUrls = new Set();
                 matches.forEach(url => {
@@ -236,32 +255,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // 3. Also check if there's a canonical board URL in the shortlink HTML to fetch full RSS
+                // Check for embedded board URL to fetch RSS
                 const boardMatch = htmlText.match(/https:\/\/(?:[a-z]+\.)?pinterest\.com\/([a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)\/?/);
                 if (boardMatch && boardMatch[1] && !boardMatch[1].startsWith('pin/')) {
-                    statusLabel.textContent = `Found Board: ${boardMatch[1]}. Fetching RSS...`;
-                    const rssUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://www.pinterest.com/' + boardMatch[1] + '.rss')}`;
+                    statusLabel.textContent = `Found Board (${boardMatch[1]}). Fetching full RSS feed...`;
                     try {
-                        const rssRes = await fetch(rssUrl);
-                        if (rssRes.ok) {
-                            const rssText = await rssRes.text();
-                            const parser = new DOMParser();
-                            const xml = parser.parseFromString(rssText, "text/xml");
-                            const items = xml.querySelectorAll("item");
-                            items.forEach(item => {
-                                const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
-                                const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
-                                const srcMatch = desc.match(/src="([^"]+)"/);
-                                if (srcMatch && srcMatch[1]) {
-                                    const highRes = srcMatch[1].replace(/236x|474x/, '736x');
-                                    rawImages.push({ imgUrl: highRes, link: link });
-                                }
-                            });
-                        }
-                    } catch(e) { console.log("RSS fetch fallback failed", e); }
+                        const rssText = await fetchWithProxy('https://www.pinterest.com/' + boardMatch[1] + '.rss');
+                        const parser = new DOMParser();
+                        const xml = parser.parseFromString(rssText, "text/xml");
+                        const items = xml.querySelectorAll("item");
+                        items.forEach(item => {
+                            const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
+                            const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
+                            const srcMatch = desc.match(/src="([^"]+)"/);
+                            if (srcMatch && srcMatch[1]) {
+                                const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                                rawImages.push({ imgUrl: highRes, link: link });
+                            }
+                        });
+                    } catch(e) { console.log("Board RSS fetch failed", e); }
                 }
 
-                // If RSS yielded nothing, use extracted page images
+                // If RSS didn't return images, use extracted image URLs
                 if (rawImages.length === 0 && uniqueUrls.size > 0) {
                     uniqueUrls.forEach(imgUrl => {
                         rawImages.push({ imgUrl: imgUrl, link: inputUrl });
@@ -269,16 +284,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            progressBar.style.width = '75%';
-            statusLabel.textContent = `Analyzing ${rawImages.length} images for HD quality...`;
+            progressBar.style.width = '80%';
+            statusLabel.textContent = `Validating quality for ${rawImages.length} images...`;
 
-            // Filter images by quality
             let newImages = [];
             await Promise.all(rawImages.map(imgData => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.onload = () => {
-                        if (img.naturalWidth >= 400 || img.naturalHeight >= 400) {
+                        if (img.naturalWidth >= 300 || img.naturalHeight >= 300) {
                             newImages.push(imgData);
                         }
                         resolve();
@@ -291,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.style.width = '100%';
 
             if(newImages.length === 0) {
-                statusLabel.textContent = "⚠️ No high-res images found at this link.";
+                statusLabel.textContent = "⚠️ No images found at this link.";
             } else {
                 if(clearExisting) {
                     config.images = newImages;
@@ -300,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderImages();
-                statusLabel.textContent = `✅ Success! ${newImages.length} HD images imported from Pinterest!`;
+                statusLabel.textContent = `✅ Success! ${newImages.length} images imported!`;
                 document.getElementById('pinterest-url').value = '';
             }
         } catch (err) {

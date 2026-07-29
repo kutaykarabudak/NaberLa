@@ -138,40 +138,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playTrack(index) {
-        if(!config.music || config.music.length === 0) {
-            titleEl.innerText = "No music in playlist";
-            return;
-        }
-        currentTrackIndex = index % config.music.length;
-        const url = config.music[currentTrackIndex];
-        
-        // Stop current
-        htmlAudio.pause();
-        if(isYtReady && ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-
-        const ytId = getYouTubeId(url);
-        if(ytId) {
-            currentMode = 'youtube';
-            ytLinkEl.href = url;
-            ytLinkEl.classList.remove('hidden');
-            titleEl.innerText = "Loading YouTube...";
-            if(isYtReady) {
-                ytPlayer.loadVideoById(ytId);
-                ytPlayer.setVolume(isMuted ? 0 : 50);
-                ytPlayer.playVideo();
-            } else {
-                // Try again shortly if API not loaded
-                setTimeout(() => playTrack(index), 500);
+        try {
+            if(!config.music || config.music.length === 0) {
+                if (titleEl) titleEl.innerText = "No music in playlist";
+                return;
             }
-        } else {
-            currentMode = 'html';
-            ytLinkEl.classList.add('hidden');
-            titleEl.innerText = url.split('/').pop();
-            htmlAudio.src = url;
-            htmlAudio.volume = isMuted ? 0 : 0.5;
-            htmlAudio.play().catch(e=>console.log("Audio play error", e));
+            currentTrackIndex = index % config.music.length;
+            const url = config.music[currentTrackIndex];
+            
+            // Stop current
+            try { htmlAudio.pause(); } catch(e){}
+            try {
+                if(isYtReady && ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+                    ytPlayer.stopVideo();
+                }
+            } catch(e){}
+
+            const ytId = getYouTubeId(url);
+            if(ytId) {
+                currentMode = 'youtube';
+                if (ytLinkEl) {
+                    ytLinkEl.href = url;
+                    ytLinkEl.classList.remove('hidden');
+                }
+                if (titleEl) titleEl.innerText = "Loading YouTube...";
+                
+                if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                    try {
+                        ytPlayer.loadVideoById(ytId);
+                        if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(isMuted ? 0 : 50);
+                        if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
+                    } catch(ytErr) {
+                        console.warn("YouTube play exception:", ytErr);
+                    }
+                } else {
+                    setTimeout(() => playTrack(index), 500);
+                }
+            } else {
+                currentMode = 'html';
+                if (ytLinkEl) ytLinkEl.classList.add('hidden');
+                if (titleEl) titleEl.innerText = url.split('/').pop();
+                htmlAudio.src = url;
+                htmlAudio.volume = isMuted ? 0 : 0.5;
+                htmlAudio.play().catch(e=>console.log("Audio play error", e));
+            }
+            isPlaying = true;
+        } catch(globalErr) {
+            console.error("Error in playTrack:", globalErr);
         }
-        isPlaying = true;
     }
 
     function togglePlayPause() {
@@ -382,19 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialization & Curtain Lift
     if (enterBtn) {
-        enterBtn.addEventListener('click', () => {
+        enterBtn.addEventListener('click', (e) => {
+            if (e) e.preventDefault();
             isEntered = true;
             
-            // Lift curtain overlay up smoothly
-            startOverlay.classList.add('curtain-lift');
-            
-            // Set display none after 900ms transition
-            setTimeout(() => {
-                startOverlay.style.display = 'none';
-            }, 900);
+            // Immediately lift curtain overlay
+            if (startOverlay) {
+                startOverlay.classList.add('curtain-lift');
+                setTimeout(() => {
+                    startOverlay.style.display = 'none';
+                }, 900);
+            }
 
-            // Start music playback
-            playTrack(0);
+            // Start music safely
+            try {
+                playTrack(0);
+            } catch(musicErr) {
+                console.error("Music start failed:", musicErr);
+            }
         });
     }
 
