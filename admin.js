@@ -35,11 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
             'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
             'https://www.youtube.com/watch?v=5qap5aO4i9A'
         ],
+    const defaultConfig = {
+        speed: 3,
+        music: [
+            'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
+            'https://www.youtube.com/watch?v=5qap5aO4i9A'
+        ],
         images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800'
+            { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' },
+            { imgUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/romeestrijd/' },
+            { imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/taylor_hill/' },
+            { imgUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/gigihadid/' }
         ]
     };
 
@@ -53,9 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!config) {
         config = JSON.parse(JSON.stringify(defaultConfig));
     } else {
-        // Bulletproof fallbacks
+        // Bulletproof fallbacks & Migration
         if (typeof config.speed === 'undefined') config.speed = defaultConfig.speed;
-        if (!config.images || !Array.isArray(config.images)) config.images = [...defaultConfig.images];
+        if (!config.images || !Array.isArray(config.images)) config.images = JSON.parse(JSON.stringify(defaultConfig.images));
+        
+        // Migrate legacy string images to objects
+        config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
+
         if (!config.music) config.music = [...defaultConfig.music];
         else if (typeof config.music === 'string') config.music = [config.music];
     }
@@ -85,10 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Image Handlers
     document.getElementById('add-image-btn').addEventListener('click', () => {
-        const input = document.getElementById('new-image-url');
-        if(input.value.trim() !== '') {
-            config.images.push(input.value.trim());
-            input.value = '';
+        const inputImg = document.getElementById('new-image-url');
+        const inputTarget = document.getElementById('new-target-url');
+        
+        if(inputImg.value.trim() !== '') {
+            config.images.push({
+                imgUrl: inputImg.value.trim(),
+                link: inputTarget.value.trim()
+            });
+            inputImg.value = '';
+            inputTarget.value = '';
             saveData();
             renderImages();
         }
@@ -97,12 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderImages() {
         const list = document.getElementById('image-list');
         list.innerHTML = '';
-        config.images.forEach((url, index) => {
+        config.images.forEach((item, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <div class="item-content">
-                    <img src="${url}" alt="thumb" onerror="this.src='https://via.placeholder.com/40'">
-                    <span style="overflow:hidden; text-overflow:ellipsis;">${url}</span>
+                <div class="item-content" style="flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${item.imgUrl}" alt="thumb" onerror="this.src='https://via.placeholder.com/40'">
+                        <span style="overflow:hidden; text-overflow:ellipsis;">${item.imgUrl}</span>
+                    </div>
+                    ${item.link ? `<small style="color:#aaa;">🔗 Target: ${item.link}</small>` : ''}
                 </div>
                 <button class="btn delete-btn" data-type="img" data-index="${index}">Delete</button>
             `;

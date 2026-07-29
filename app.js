@@ -17,8 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
+    
+    // Migration for app side
+    if (config.images) {
+        config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
+    }
     if(!config.images || config.images.length === 0) {
-        config.images = ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800']; // fallback
+        config.images = [{ imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' }]; // fallback
     }
     
     // MUSIC PLAYER LOGIC
@@ -171,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(config.images.length === 0) return; 
         
         for(let i=0; i<count; i++) {
-            const randomImage = config.images[Math.floor(Math.random() * config.images.length)];
+            const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
             article.className = 'post';
             
@@ -179,9 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const usernames = ['model.life', 'vogue.dreamer', 'style.muse', 'runway_star'];
             const username = usernames[Math.floor(Math.random() * usernames.length)];
 
-            article.onclick = () => window.open('https://www.instagram.com/', '_blank');
+            article.onclick = () => {
+                const url = randomItem.link || 'https://www.instagram.com/';
+                window.open(url, '_blank');
+            };
             article.innerHTML = `
-                <img src="${randomImage}" alt="Instagram Post" loading="lazy">
+                <img src="${randomItem.imgUrl}" alt="Instagram Post" loading="lazy">
                 <div class="post-info">
                     <img src="https://i.pravatar.cc/150?u=${id}" alt="${username}" class="avatar">
                     <div class="user-details">

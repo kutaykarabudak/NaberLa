@@ -48,8 +48,9 @@
 
             <section class="card">
                 <h2>Image Feed Links</h2>
-                <div class="input-group" style="flex-direction:row;">
-                    <input type="text" id="new-image-url" placeholder="https://example.com/image.jpg" style="flex:1;">
+                <div class="input-group" style="flex-direction:column; gap:10px;">
+                    <input type="text" id="new-image-url" placeholder="Image URL (e.g. assets/model1.jpg or https://...)">
+                    <input type="text" id="new-target-url" placeholder="Target Link (e.g. https://instagram.com/profile)">
                     <button id="add-image-btn" class="btn primary">Add Image</button>
                 </div>
                 <ul id="image-list" class="item-list"></ul>
