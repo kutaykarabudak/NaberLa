@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-btn').addEventListener('click', () => {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
-        if(u === 'admin' && p === '123456') {
+        if(u === 'admin' && p === '123') {
             sessionStorage.setItem('isAdmin', 'true');
             showDashboard();
         } else {
