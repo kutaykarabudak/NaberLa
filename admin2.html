@@ -3,97 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NaberLa - Admin Panel</title>
-    <link rel="stylesheet" href="admin.css?v=700">
+    <title>NaberLa Admin</title>
+    <link rel="stylesheet" href="admin.css?v=900">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="login-container">
-        <div class="login-box">
-            <h2>Admin Login</h2>
-            <input type="text" id="username" placeholder="Username" value="admin">
-            <input type="password" id="password" placeholder="Password" value="123">
-            <button id="login-btn">Login</button>
-            <p id="login-error" class="error"></p>
+    <!-- LOGIN -->
+    <div id="login-page">
+        <div class="login-card">
+            <h2>🔒 Admin</h2>
+            <input type="text" id="inp-user" placeholder="Username" value="admin">
+            <input type="password" id="inp-pass" placeholder="Password" value="123">
+            <button id="btn-login">Login</button>
+            <p id="login-err"></p>
         </div>
     </div>
 
-    <div id="admin-dashboard" class="hidden">
-        <header class="admin-header">
+    <!-- DASHBOARD -->
+    <div id="dashboard" style="display:none;">
+        <nav id="nav">
             <h1>NaberLa Admin</h1>
             <div>
-                <a href="index.html" class="btn" style="margin-right:10px;">← View Site</a>
-                <button id="logout-btn" class="btn">Logout</button>
+                <a href="index.html" class="nav-btn">← Site</a>
+                <button id="btn-logout" class="nav-btn">Logout</button>
             </div>
-        </header>
+        </nav>
 
-        <div class="admin-content">
-            <!-- Pinterest Scraper -->
-            <section class="card" style="background:#1a1025; border:1px solid #8a2be2;">
-                <h2 style="color:#d8b4fe;">Pinterest Auto-Scraper</h2>
-                <div class="input-group" style="flex-direction:column; gap:10px;">
-                    <input type="text" id="pinterest-url" placeholder="Pinterest Board/Pin URL (pin.it/xxx or pinterest.com/user/board)">
-                    <label style="color:#aaa; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="clear-existing" checked> Replace existing images
-                    </label>
-                    <button id="scan-btn" class="btn primary" style="background:#8a2be2;">Scan & Import</button>
-                    
-                    <div id="scan-progress-container" style="display:none; width:100%; background:#222; border-radius:4px; height:8px; overflow:hidden; margin-top:5px;">
-                        <div id="scan-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #8a2be2, #d8b4fe); transition:width 0.3s ease;"></div>
-                    </div>
-                    
-                    <p id="scan-status" style="color:#d8b4fe; font-size:0.9rem; font-weight:bold; display:none; margin:0;">Scanning...</p>
+        <div id="panels">
+            <!-- Pinterest Scanner -->
+            <section class="panel purple">
+                <h3>Pinterest Scraper</h3>
+                <input type="text" id="inp-pin" placeholder="Pinterest board/pin URL (pin.it/xxx veya pinterest.com/user/board)">
+                <label class="cb-label"><input type="checkbox" id="chk-clear" checked> Mevcut görselleri sil</label>
+                <button id="btn-scan" class="action-btn purple-btn">Scan & Import</button>
+                <div id="scan-bar-wrap" style="display:none;">
+                    <div id="scan-bar"></div>
                 </div>
+                <p id="scan-msg" style="display:none;"></p>
             </section>
 
-            <!-- Music Playlist -->
-            <section class="card">
-                <h2 id="music-count-header">Playlist</h2>
-                <div class="input-group" style="flex-direction:row;">
-                    <input type="text" id="new-music-url" placeholder="YouTube URL or .mp3 link" style="flex:1;">
-                    <button id="add-music-btn" class="btn primary">Add</button>
+            <!-- Music -->
+            <section class="panel">
+                <h3 id="music-h">Playlist</h3>
+                <div class="row">
+                    <input type="text" id="inp-music" placeholder="YouTube or MP3 URL" class="flex1">
+                    <button id="btn-add-music" class="action-btn">Add</button>
                 </div>
-                <ul id="music-list" class="item-list"></ul>
+                <ul id="music-list"></ul>
             </section>
 
-            <!-- Image Dimension Table -->
-            <section class="card" style="grid-column: span 2;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-                    <h2 id="image-count-header" style="margin:0; border:none; padding:0;">Image Feed</h2>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <select id="sort-images-select" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:6px 12px; border-radius:6px; font-size:0.85rem;">
-                            <option value="default">Default Order</option>
-                            <option value="res-desc">Resolution ↓</option>
-                            <option value="width-desc">Width ↓</option>
-                            <option value="height-desc">Height ↓</option>
-                        </select>
-                    </div>
+            <!-- Images Table -->
+            <section class="panel wide">
+                <div class="row between">
+                    <h3 id="img-h">Images</h3>
+                    <select id="sort-sel">
+                        <option value="">Default</option>
+                        <option value="res">Resolution ↓</option>
+                        <option value="w">Width ↓</option>
+                        <option value="h">Height ↓</option>
+                    </select>
                 </div>
-
-                <div class="input-group" style="flex-direction:row; gap:10px; margin-bottom:20px;">
-                    <input type="text" id="new-image-url" placeholder="Image URL" style="flex:2;">
-                    <input type="text" id="new-target-url" placeholder="Target Link (optional)" style="flex:2;">
-                    <button id="add-image-btn" class="btn primary">Add</button>
+                <div class="row" style="margin-bottom:16px;">
+                    <input type="text" id="inp-img" placeholder="Image URL" class="flex1">
+                    <input type="text" id="inp-link" placeholder="Target link (optional)" class="flex1">
+                    <button id="btn-add-img" class="action-btn">Add</button>
                 </div>
-
-                <div style="overflow-x:auto;">
-                    <table class="image-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
-                        <thead>
-                            <tr style="background:#0f172a; border-bottom:2px solid #334155; color:#94a3b8;">
-                                <th style="padding:10px;">Preview</th>
-                                <th style="padding:10px;">Filename</th>
-                                <th style="padding:10px;">Dimensions</th>
-                                <th style="padding:10px;">Quality</th>
-                                <th style="padding:10px;">Grid Span</th>
-                                <th style="padding:10px; text-align:right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="image-table-body"></tbody>
+                <div class="table-wrap">
+                    <table id="img-table">
+                        <thead><tr><th>Preview</th><th>File</th><th>Dimensions</th><th>Quality</th><th></th></tr></thead>
+                        <tbody id="img-tbody"></tbody>
                     </table>
                 </div>
             </section>
         </div>
     </div>
-    <script src="admin2.js?v=700"></script>
+    <script src="admin2.js?v=900"></script>
 </body>
 </html>

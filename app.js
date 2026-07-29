@@ -1,411 +1,268 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const startOverlay = document.getElementById('start-overlay');
-    const enterBtn = document.getElementById('enter-btn');
-    const feedContainer = document.getElementById('feed-container');
-    
-    // Player DOM
-    const htmlAudio = document.getElementById('html-audio');
-    const btnPlayPause = document.getElementById('ctrl-playpause');
-    const btnNext = document.getElementById('ctrl-next');
-    const btnPrev = document.getElementById('ctrl-prev');
-    const btnMute = document.getElementById('ctrl-mute');
-    const titleEl = document.getElementById('current-song-title');
-    const ytLinkEl = document.getElementById('yt-link');
-    const seekBar = document.getElementById('seek-bar');
-    const timeCurrent = document.getElementById('time-current');
-    const timeTotal = document.getElementById('time-total');
-    const speedControl = document.getElementById('main-scroll-speed');
-    const scrollPlayPauseBtn = document.getElementById('ctrl-scroll-playpause');
-    const contactBtn = document.getElementById('contact-btn');
-    const contactModal = document.getElementById('contact-modal');
-    const closeContactBtn = document.getElementById('close-contact-btn');
+/*  NaberLa v9 — Complete Rewrite  */
+(function(){
+    "use strict";
 
-    let isLoading = false;
-    let isHovering = false;
-    let isScrollManuallyPaused = false;
+    /* ─── DOM ─── */
+    const $ = id => document.getElementById(id);
+    const overlay   = $('overlay');
+    const playBtn   = $('play-btn');
+    const feed      = $('feed');
+    const cursor    = $('custom-cursor');
+    const audio     = $('html-audio');
+    const songTitle = $('song-title');
+    const ytLink    = $('yt-link');
+    const btnPP     = $('btn-pp');
+    const btnNext   = $('btn-next');
+    const btnPrev   = $('btn-prev');
+    const btnMute   = $('btn-mute');
+    const btnScrollPP = $('btn-scroll-pp');
+    const speedSlider = $('speed-slider');
+    const contactOpen  = $('contact-open');
+    const contactClose = $('contact-close');
+    const contactModal = $('contact-modal');
 
-    // Custom Logo Mouse Cursor Tracking
-    // After rotate(180deg), the sharp tip is at TOP-CENTER of the 32x32 box.
-    // So offset X by -16px (half width) to center the tip on the mouse point.
-    const customCursor = document.getElementById('custom-cursor');
-    if (customCursor) {
-        document.addEventListener('mousemove', (e) => {
-            customCursor.style.left = (e.clientX - 16) + 'px';
-            customCursor.style.top = e.clientY + 'px';
-        });
-    }
+    /* ─── STATE ─── */
+    let hovering = false, scrollPaused = false, entered = false;
+    let loading = false, speed = 0, scrollAcc = 0;
+    let trackIdx = 0, playing = false, muted = false;
+    let ytPlayer = null, ytReady = false, mode = 'none';
 
-    // Config from localStorage
-    let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
-    
-    const defaultImages = [
-        { "imgUrl": "https://i.pinimg.com/originals/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
-        { "imgUrl": "https://i.pinimg.com/originals/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
-        { "imgUrl": "https://i.pinimg.com/originals/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/" },
-        { "imgUrl": "https://i.pinimg.com/originals/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/" },
-        { "imgUrl": "https://i.pinimg.com/originals/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/" },
-        { "imgUrl": "https://i.pinimg.com/originals/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108346/" },
-        { "imgUrl": "https://i.pinimg.com/originals/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108353/" },
-        { "imgUrl": "https://i.pinimg.com/originals/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108504/" },
-        { "imgUrl": "https://i.pinimg.com/originals/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108523/" },
-        { "imgUrl": "https://i.pinimg.com/originals/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108344/" },
-        { "imgUrl": "https://i.pinimg.com/originals/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108491/" },
-        { "imgUrl": "https://i.pinimg.com/originals/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108349/" },
-        { "imgUrl": "https://i.pinimg.com/originals/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108415/" },
-        { "imgUrl": "https://i.pinimg.com/originals/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108470/" },
-        { "imgUrl": "https://i.pinimg.com/originals/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108519/" },
-        { "imgUrl": "https://i.pinimg.com/originals/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108503/" }
-    ];
-
-    const defaultMusic = [
-        'https://www.youtube.com/watch?v=5qap5aO4i9A',
-        'https://www.youtube.com/watch?v=jfKfPfyJRdk'
-    ];
-
-    if (!config.images || config.images.length === 0) {
-        config.images = defaultImages;
-    }
-    if (!config.music || config.music.length === 0) {
-        config.music = defaultMusic;
-    }
-
-    // Normalize image objects & upgrade to HD
-    config.images = config.images.map(img => {
-        let url = typeof img === 'string' ? img : img.imgUrl;
-        let link = typeof img === 'object' ? (img.link || '') : '';
-        let width = typeof img === 'object' ? (img.width || 0) : 0;
-        let height = typeof img === 'object' ? (img.height || 0) : 0;
-        url = url.replace(/\/(?:236x|474x|736x)\//, '/originals/');
-        return { imgUrl: url, link: link, width: width, height: height };
-    });
-
-    speedControl.value = config.speed || 3;
-    speedControl.addEventListener('change', () => {
-        config.speed = speedControl.value;
-        localStorage.setItem('naberlaConfig', JSON.stringify(config));
-    });
-
-    // MUSIC PLAYER LOGIC
-    let currentTrackIndex = 0;
-    let isPlaying = false;
-    let isMuted = false;
-    let ytPlayer = null;
-    let isYtReady = false;
-    let currentMode = 'none';
-
-    const SVG_PLAY = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
-    const SVG_PAUSE = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
-    const SVG_UNMUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
-    const SVG_MUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
-
-    function initYouTubePlayer() {
-        if (ytPlayer) return; // Already initialized
-        const originUrl = (window.location.origin === 'file://' || window.location.origin === 'null') 
-            ? 'https://localhost' 
-            : window.location.origin;
-
-        ytPlayer = new YT.Player('yt-player', {
-            height: '1', width: '1',
-            playerVars: { 'autoplay': 0, 'controls': 0, 'origin': originUrl },
-            events: {
-                'onReady': () => { isYtReady = true; console.log('YT Player READY'); },
-                'onStateChange': onPlayerStateChange,
-                'onError': (e) => { console.error('YT Error:', e.data); playNextTrack(); }
-            }
-        });
-    }
-
-    // Handle YT API: if already loaded, init now. Otherwise set global callback.
-    if (typeof YT !== 'undefined' && YT.Player) {
-        initYouTubePlayer();
-    }
-    window.onYouTubeIframeAPIReady = function() {
-        initYouTubePlayer();
+    /* ─── CONFIG (localStorage) ─── */
+    const DEFAULTS = {
+        speed: 3,
+        music: [
+            'https://www.youtube.com/watch?v=5qap5aO4i9A',
+            'https://www.youtube.com/watch?v=jfKfPfyJRdk'
+        ],
+        images: [
+            {u:"https://i.pinimg.com/originals/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg",l:""},
+            {u:"https://i.pinimg.com/originals/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg",l:""}
+        ]
     };
 
-    function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED) playNextTrack();
-        if (event.data === YT.PlayerState.PLAYING) {
-            updatePlayBtn(true);
-            try {
-                if (ytPlayer && ytPlayer.getVideoData) {
-                    titleEl.innerText = ytPlayer.getVideoData().title || "NaberLa Music";
-                }
-            } catch(e){}
+    function loadConfig(){
+        try{
+            const raw = localStorage.getItem('naberlaConfig');
+            if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+            const c = JSON.parse(raw);
+            // Normalize images from admin format
+            if(c.images && c.images.length){
+                c.images = c.images.map(img => {
+                    if(typeof img === 'string') return {u:img, l:''};
+                    return {u: img.imgUrl || img.u || '', l: img.link || img.l || ''};
+                }).filter(i => i.u);
+            }
+            if(!c.images || !c.images.length) c.images = JSON.parse(JSON.stringify(DEFAULTS.images));
+            if(!c.music || !c.music.length) c.music = [...DEFAULTS.music];
+            c.speed = c.speed || 3;
+            return c;
+        }catch(e){
+            return JSON.parse(JSON.stringify(DEFAULTS));
         }
     }
 
-    htmlAudio.addEventListener('ended', playNextTrack);
-    htmlAudio.addEventListener('play', () => updatePlayBtn(true));
-    htmlAudio.addEventListener('pause', () => updatePlayBtn(false));
+    const cfg = loadConfig();
+    if(speedSlider) speedSlider.value = cfg.speed;
 
-    function getYouTubeId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+    /* ─── CUSTOM CURSOR ─── */
+    /* Logo tip originally points DOWN.  After CSS rotate(135deg), tip points UPPER-LEFT.
+       The tip ends up near the top-left corner of the bounding box.
+       So position: div top-left = mouse position  →  tip is right at the pointer. */
+    if(cursor){
+        document.addEventListener('mousemove', e => {
+            cursor.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0)`;
+        });
     }
 
-    function playTrack(index) {
-        try {
-            if(!config.music || config.music.length === 0) {
-                if (titleEl) titleEl.innerText = "No music in playlist";
-                return;
+    /* ─── YOUTUBE PLAYER ─── */
+    function initYT(){
+        if(ytPlayer) return;
+        const origin = (location.origin === 'file://' || location.origin === 'null')
+            ? 'https://localhost' : location.origin;
+        ytPlayer = new YT.Player('yt-player',{
+            width:'1', height:'1',
+            playerVars:{autoplay:0, controls:0, origin: origin},
+            events:{
+                onReady(){ ytReady = true; console.log('[NaberLa] YT Ready'); },
+                onStateChange(e){
+                    if(e.data === YT.PlayerState.ENDED) nextTrack();
+                    if(e.data === YT.PlayerState.PLAYING){
+                        playing = true; btnPP.textContent = '⏸';
+                        try{ songTitle.textContent = ytPlayer.getVideoData().title || 'YouTube'; }catch(x){}
+                    }
+                },
+                onError(e){ console.warn('[NaberLa] YT Error',e.data); nextTrack(); }
             }
-            currentTrackIndex = index % config.music.length;
-            const url = config.music[currentTrackIndex];
-            
-            try { htmlAudio.pause(); } catch(e){}
-            try {
-                if(isYtReady && ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-                    ytPlayer.stopVideo();
-                }
-            } catch(e){}
+        });
+    }
+    // Race-safe: init now if API already loaded, otherwise set callback
+    if(typeof YT !== 'undefined' && YT.Player) initYT();
+    window.onYouTubeIframeAPIReady = initYT;
 
-            const ytId = getYouTubeId(url);
-            if(ytId) {
-                currentMode = 'youtube';
-                if (ytLinkEl) { ytLinkEl.href = url; ytLinkEl.classList.remove('hidden'); }
-                if (titleEl) titleEl.innerText = "Loading YouTube...";
-                
-                if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                    ytPlayer.loadVideoById(ytId);
-                    if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(isMuted ? 0 : 50);
-                    if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
-                } else {
-                    // YT API not ready yet, retry
-                    setTimeout(() => playTrack(index), 1000);
-                }
+    /* ─── MUSIC ─── */
+    function ytId(url){
+        const m = url.match(/(?:youtu\.be\/|v=|\/embed\/)([^#&?]{11})/);
+        return m ? m[1] : null;
+    }
+
+    function playTrack(idx){
+        if(!cfg.music.length){ songTitle.textContent='No music'; return; }
+        trackIdx = ((idx % cfg.music.length) + cfg.music.length) % cfg.music.length;
+        const url = cfg.music[trackIdx];
+        try{ audio.pause(); }catch(e){}
+        try{ if(ytReady && ytPlayer.stopVideo) ytPlayer.stopVideo(); }catch(e){}
+
+        const vid = ytId(url);
+        if(vid){
+            mode = 'youtube';
+            ytLink.href = url; ytLink.style.display = 'inline-flex';
+            songTitle.textContent = 'Loading…';
+            if(ytReady && ytPlayer.loadVideoById){
+                ytPlayer.loadVideoById(vid);
+                ytPlayer.setVolume(muted ? 0 : 50);
             } else {
-                currentMode = 'html';
-                if (ytLinkEl) ytLinkEl.classList.add('hidden');
-                if (titleEl) titleEl.innerText = url.split('/').pop();
-                htmlAudio.src = url;
-                htmlAudio.volume = isMuted ? 0 : 0.5;
-                htmlAudio.play().catch(e=>console.log("Audio play error", e));
+                setTimeout(()=>playTrack(idx), 800);
             }
-            isPlaying = true;
-        } catch(err) {
-            console.error("Error playing track:", err);
+        } else {
+            mode = 'html';
+            ytLink.style.display = 'none';
+            songTitle.textContent = url.split('/').pop().split('?')[0];
+            audio.src = url;
+            audio.volume = muted ? 0 : 0.5;
+            audio.play().catch(()=>{});
+        }
+        playing = true; btnPP.textContent = '⏸';
+    }
+
+    function togglePP(){
+        if(mode==='youtube' && ytReady && ytPlayer){
+            const s = ytPlayer.getPlayerState();
+            if(s===YT.PlayerState.PLAYING){ ytPlayer.pauseVideo(); playing=false; btnPP.textContent='▶'; }
+            else { ytPlayer.playVideo(); playing=true; btnPP.textContent='⏸'; }
+        } else if(mode==='html'){
+            if(audio.paused){ audio.play(); playing=true; btnPP.textContent='⏸'; }
+            else { audio.pause(); playing=false; btnPP.textContent='▶'; }
         }
     }
-
-    function togglePlayPause() {
-        if(currentMode === 'youtube' && isYtReady && ytPlayer) {
-            const state = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
-            if(state === YT.PlayerState.PLAYING) {
-                ytPlayer.pauseVideo();
-                updatePlayBtn(false);
-            } else {
-                ytPlayer.playVideo();
-                updatePlayBtn(true);
-            }
-        } else if(currentMode === 'html') {
-            if(htmlAudio.paused) {
-                htmlAudio.play();
-                updatePlayBtn(true);
-            } else {
-                htmlAudio.pause();
-                updatePlayBtn(false);
-            }
-        }
+    function nextTrack(){ playTrack(trackIdx+1); }
+    function prevTrack(){ playTrack(trackIdx-1); }
+    function toggleMute(){
+        muted = !muted;
+        if(mode==='youtube' && ytReady && ytPlayer.setVolume) ytPlayer.setVolume(muted?0:50);
+        audio.volume = muted ? 0 : 0.5;
+        btnMute.textContent = muted ? '🔇' : '🔊';
     }
 
-    function playNextTrack() { playTrack(currentTrackIndex + 1); }
-    function playPrevTrack() {
-        if(!config.music || config.music.length === 0) return;
-        currentTrackIndex = (currentTrackIndex - 1 + config.music.length) % config.music.length;
-        playTrack(currentTrackIndex);
-    }
-
-    function toggleMute() {
-        isMuted = !isMuted;
-        if(currentMode === 'youtube' && isYtReady && ytPlayer && ytPlayer.setVolume) {
-            ytPlayer.setVolume(isMuted ? 0 : 50);
-        }
-        htmlAudio.volume = isMuted ? 0 : 0.5;
-        btnMute.innerHTML = isMuted ? SVG_MUTED : SVG_UNMUTED;
-    }
-
-    function updatePlayBtn(playing) {
-        isPlaying = playing;
-        btnPlayPause.innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
-    }
-
-    btnPlayPause.addEventListener('click', togglePlayPause);
-    btnNext.addEventListener('click', playNextTrack);
-    btnPrev.addEventListener('click', playPrevTrack);
+    audio.addEventListener('ended', nextTrack);
+    btnPP.addEventListener('click', togglePP);
+    btnNext.addEventListener('click', nextTrack);
+    btnPrev.addEventListener('click', prevTrack);
     btnMute.addEventListener('click', toggleMute);
 
-    // NO-REPEAT SHUFFLE QUEUE LOGIC (Fisher-Yates)
-    let imagePool = [];
-    function getNextImageItem() {
-        if (imagePool.length === 0) {
-            imagePool = [...config.images];
-            for (let i = imagePool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [imagePool[i], imagePool[j]] = [imagePool[j], imagePool[i]];
+    /* ─── NO-REPEAT SHUFFLE ─── */
+    let pool = [];
+    function nextImage(){
+        if(!pool.length){
+            pool = [...cfg.images];
+            for(let i=pool.length-1;i>0;i--){
+                const j=Math.floor(Math.random()*(i+1));
+                [pool[i],pool[j]]=[pool[j],pool[i]];
             }
         }
-        return imagePool.pop();
+        return pool.pop();
     }
 
-    // Decide column span based on image dimensions
-    function getColSpan(item) {
-        const w = item.width || 0;
-        const h = item.height || 0;
-        
-        // Large landscape images → 3 columns
-        if (w > 1200 && w > h * 1.3) return 'col-span-3';
-        // Wide or high-res images → 2 columns
-        if (w > 800 || (w > h * 1.1 && w > 600)) return 'col-span-2';
-        
-        // Random variety for remaining: 35% get 2-col, 10% get 3-col
-        const rand = Math.random();
-        if (rand > 0.90) return 'col-span-3';
-        if (rand > 0.55) return 'col-span-2';
-        return 'col-span-1';
+    /* ─── RENDER CARDS ─── */
+    let rendered = 0;
+    function addCards(n){
+        if(!cfg.images.length) return;
+        for(let i=0;i<n;i++){
+            rendered++;
+            const img = nextImage();
+            if(!img) continue;
+            const el = document.createElement('article');
+
+            // Random span distribution: ~35% span2, ~12% span3, rest span1
+            const r = Math.random();
+            if(r > 0.88)      el.className = 'card span3';
+            else if(r > 0.53) el.className = 'card span2';
+            else               el.className = 'card';
+
+            const src = img.u.replace(/\/(?:236x|474x|736x)\//,'/originals/');
+            el.innerHTML = `<img src="${src}" alt="" loading="lazy">` +
+                (img.l ? `<div class="card-overlay">🔗 View</div>` : '');
+            if(img.l) el.addEventListener('click',()=>window.open(img.l,'_blank'));
+            el.addEventListener('mouseenter',()=>hovering=true);
+            el.addEventListener('mouseleave',()=>hovering=false);
+            feed.appendChild(el);
+        }
     }
+    addCards(18);
 
-    // RENDER POSTS 
-    let totalRendered = 0;
-    const renderPosts = (count = 12) => {
-        if(!config.images || config.images.length === 0) return; 
-        
-        for (let i = 0; i < count; i++) {
-            totalRendered++;
-            
-            // AdSense placeholder every 15 images
-            if (totalRendered % 15 === 0) {
-                const adBlock = document.createElement('article');
-                adBlock.className = 'post col-span-2 adsense-container';
-                adBlock.style.background = '#111';
-                adBlock.style.display = 'flex';
-                adBlock.style.alignItems = 'center';
-                adBlock.style.justifyContent = 'center';
-                adBlock.style.border = '1px dashed #333';
-                adBlock.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <span style="font-size:0.7rem; color:#888; letter-spacing:2px; text-transform:uppercase;">Advertisement</span>
-                        <div style="margin-top:15px; width:300px; height:250px; background:#0a0a0a; display:flex; align-items:center; justify-content:center; color:#555;">
-                            Google AdSense
-                        </div>
-                    </div>
-                `;
-                feedContainer.appendChild(adBlock);
-            }
-
-            const item = getNextImageItem();
-            if (!item) continue;
-
-            const article = document.createElement('article');
-            const colClass = getColSpan(item);
-            article.className = `post ${colClass}`;
-            
-            const hdImgUrl = item.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
-            const isVideo = hdImgUrl.match(/\.(mp4|webm|ogg)$/i);
-            const mediaTag = isVideo 
-                ? `<video src="${hdImgUrl}" autoplay loop muted playsinline class="post-media"></video>`
-                : `<img src="${hdImgUrl}" alt="Feed Media" loading="lazy" class="post-media">`;
-
-            article.onclick = () => {
-                if (item.link) window.open(item.link, '_blank');
-            };
-            
-            article.innerHTML = `
-                ${mediaTag}
-                ${item.link ? `
-                <div class="post-info">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="insta-icon"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    <h3>View Link</h3>
-                </div>
-                ` : ''}
-            `;
-            
-            article.addEventListener('mouseenter', () => isHovering = true);
-            article.addEventListener('mouseleave', () => isHovering = false);
-
-            feedContainer.appendChild(article);
+    /* ─── AUTO-SCROLL ─── */
+    function tick(){
+        const target = !entered ? 1.2 :
+                        (hovering || scrollPaused) ? 0 :
+                        (parseFloat(speedSlider.value)||3) * 0.7;
+        speed += (target - speed) * 0.1;
+        scrollAcc += speed;
+        if(scrollAcc >= 1){
+            const px = Math.floor(scrollAcc);
+            window.scrollBy(0, px);
+            scrollAcc -= px;
         }
-    };
-
-    // Initial load
-    renderPosts(16);
-
-    let isEntered = false;
-    let currentSpeed = 0;
-    let scrollAccumulator = 0;
-
-    function scrollLoop() {
-        const userSpeed = parseFloat(speedControl.value) || 3;
-        let targetSpeed = 0;
-        
-        if (!isEntered) {
-            targetSpeed = 1.5;
-        } else if (!isHovering && !isScrollManuallyPaused) {
-            targetSpeed = userSpeed * 0.75;
+        // Infinite scroll
+        if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 800 && !loading){
+            loading = true;
+            setTimeout(()=>{ addCards(8); loading=false; },80);
         }
-        
-        currentSpeed += (targetSpeed - currentSpeed) * 0.1;
-        scrollAccumulator += currentSpeed;
-        
-        if (scrollAccumulator >= 1) {
-            const pixelsToScroll = Math.floor(scrollAccumulator);
-            window.scrollBy(0, pixelsToScroll);
-            scrollAccumulator -= pixelsToScroll;
-        }
-        
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 900) {
-            if (!isLoading) {
-                isLoading = true;
-                setTimeout(() => {
-                    renderPosts(8);
-                    isLoading = false;
-                }, 100);
-            }
-        }
-        requestAnimationFrame(scrollLoop);
+        requestAnimationFrame(tick);
     }
-    
-    requestAnimationFrame(scrollLoop);
+    requestAnimationFrame(tick);
 
-    // PLAY BUTTON HANDLER — starts music & lifts curtain
-    if (enterBtn) {
-        enterBtn.addEventListener('click', (e) => {
-            if (e) e.preventDefault();
-            isEntered = true;
-            
-            if (startOverlay) {
-                startOverlay.classList.add('curtain-lift');
-                setTimeout(() => {
-                    startOverlay.style.display = 'none';
-                }, 900);
-            }
-
-            try {
-                playTrack(0);
-            } catch(musicErr) {
-                console.error("Music start failed:", musicErr);
-            }
-        });
-    }
-
-    // Scroll Control Button
-    scrollPlayPauseBtn.addEventListener('click', () => {
-        isScrollManuallyPaused = !isScrollManuallyPaused;
-        scrollPlayPauseBtn.innerHTML = isScrollManuallyPaused 
-            ? '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' 
-            : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+    /* ─── PLAY BUTTON / CURTAIN ─── */
+    playBtn.addEventListener('click', e => {
+        e.preventDefault();
+        entered = true;
+        overlay.classList.add('lifted');
+        setTimeout(()=>{ overlay.style.display='none'; },950);
+        playTrack(0);
     });
 
-    if(contactBtn) contactBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
-    if(closeContactBtn) closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
-
-    let scrollTimeout;
-    window.addEventListener('wheel', () => {
-        isHovering = true;
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            isHovering = document.querySelector('.post:hover') !== null;
-        }, 1500); 
+    /* ─── SCROLL CONTROL ─── */
+    btnScrollPP.addEventListener('click',()=>{
+        scrollPaused = !scrollPaused;
+        btnScrollPP.textContent = scrollPaused ? '▶' : '⏸';
     });
-});
+    speedSlider.addEventListener('input',()=>{
+        cfg.speed = speedSlider.value;
+        try{ localStorage.setItem('naberlaConfig', JSON.stringify(cfg)); }catch(e){}
+    });
+
+    /* ─── CONTACT MODAL ─── */
+    if(contactOpen) contactOpen.addEventListener('click',()=>contactModal.style.display='flex');
+    if(contactClose) contactClose.addEventListener('click',()=>contactModal.style.display='none');
+
+    /* ─── WHEEL PAUSE ─── */
+    let wheelTimer;
+    window.addEventListener('wheel',()=>{
+        hovering=true;
+        clearTimeout(wheelTimer);
+        wheelTimer=setTimeout(()=>{hovering=!!document.querySelector('.card:hover');},1200);
+    });
+
+})();
