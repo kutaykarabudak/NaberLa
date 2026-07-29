@@ -28,12 +28,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
+    const defaultImages = [
+        { imgUrl: 'https://images.unsplash.com/photo-1523456382101-7053075fb13c?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/romeestrijd/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1506544777-62cd38f615ee?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/kendalljenner/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/haileybieber/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/bellahadid/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/gigihadid/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1525264353457-3f307ebc52fb?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/emrata/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/irinashayk/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/barbarapalvin/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1526413232644-8a40f4110fa7?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/taylor_hill/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1520635489814-1e0e5a953e1a?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/josephineskriver/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/marthahunt/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1510832198440-a52376950479?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/adrianalima/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1500336624523-d727130c3328?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/mirandakerr/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/sarasampaio/' },
+        { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' }
+    ];
+
     // Migration for app side
     if (config.images) {
         config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
     }
-    if(!config.images || config.images.length === 0) {
-        config.images = [{ imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' }]; // fallback
+    if(!config.images || config.images.length < 5) {
+        config.images = defaultImages;
+        localStorage.setItem('naberlaConfig', JSON.stringify(config));
     }
 
     // Set initial speed UI
