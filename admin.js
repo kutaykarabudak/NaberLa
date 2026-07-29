@@ -36,26 +36,31 @@ document.addEventListener('DOMContentLoaded', () => {
             'https://www.youtube.com/watch?v=5qap5aO4i9A'
         ],
         images: [
-            { imgUrl: 'https://i.pinimg.com/736x/82/6b/b3/826bb3c72d371585ced968383b77b8b1.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/49/48/c6/4948c6be445d68f48115e4ca1dd55a0b.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/8c/1e/37/8c1e3751ddad8a8a334af0c642aed5ab.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/77/bb/03/77bb038dd44f4826acdbb9760c5cbd7e.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/dd/ff/93/ddff936573861ec90b9a2f02f00a971f.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/8a/97/61/8a9761a6daefb42ab774102dfa9a41ad.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/00/22/f9/0022f96edecf8f1bb4f3fe0d585890de.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/3c/32/77/3c3277d643902f7caf19713486d48b6f.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/b3/7b/ba/b37bba8d745479dc2aec22a2c29c4d7e.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/d9/ab/ee/d9abeec40f0add52fa1cf3742cc8f93f.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/2f/75/1e/2f751ece5231ba84d0bd9dd5bfe0dad8.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/9d/27/63/9d27636c36a209c8ad3641b42e4a5fc1.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/e0/c1/04/e0c104c98131f28c79f904f12c829130.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/9b/cf/e8/9bcfe8413e312a001cb5eed39983ce41.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/fb/42/d8/fb42d851861cca2d4d1fe930c259085b.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/d6/45/8e/d6458e53687a7bc14ee8637af1582fda.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/c8/32/a8/c832a833aa4cdd3f61cb4134b502c19b.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/21/de/f5/21def5615b425b9f59256d579020305f.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/39/2b/a2/392ba25f3b8fd871923e7a30ee3ebd4b.jpg', link: '' },
-            { imgUrl: 'https://i.pinimg.com/736x/81/a4/cd/81a4cd5d2b9b212c8e81941a377cfa7b.jpg', link: '' }
+            { "imgUrl": "https://i.pinimg.com/736x/b6/db/fb/b6dbfb14f13f92dd67201a4b6d53158d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108236/" },
+            { "imgUrl": "https://i.pinimg.com/736x/09/3a/53/093a534cc33a630c46c7e31c7fb24730.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108300/" },
+            { "imgUrl": "https://i.pinimg.com/736x/18/09/27/180927c1c23bf6005f9e156d5b3fcddf.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108467/" },
+            { "imgUrl": "https://i.pinimg.com/736x/14/aa/a1/14aaa1af7d9558d87ca7ee5c03c01420.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108484/" },
+            { "imgUrl": "https://i.pinimg.com/736x/ba/09/c1/ba09c18936b35405ebaf6408a47996a1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108414/" },
+            { "imgUrl": "https://i.pinimg.com/736x/53/1d/89/531d89fcb64b7306ef1c527957b71463.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108346/" },
+            { "imgUrl": "https://i.pinimg.com/736x/86/65/c4/8665c4cef8f0dd495f81c37ee39cf188.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108353/" },
+            { "imgUrl": "https://i.pinimg.com/736x/67/9a/b8/679ab8e219838428b35d217cd789cae3.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108504/" },
+            { "imgUrl": "https://i.pinimg.com/736x/15/e5/ab/15e5ab4f2f0d8f56c1d2cd5b79f9a5cb.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108523/" },
+            { "imgUrl": "https://i.pinimg.com/736x/b1/54/fc/b154fc6ad0abb97bd7ee40585377f583.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108344/" },
+            { "imgUrl": "https://i.pinimg.com/736x/2f/d0/44/2fd04426158b3c9773d06dd849e8a9d1.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108491/" },
+            { "imgUrl": "https://i.pinimg.com/736x/71/8b/80/718b801cb33ecf9071f275cf3318371a.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108349/" },
+            { "imgUrl": "https://i.pinimg.com/736x/a3/06/9c/a3069ce243c28813231834e87856e7ec.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108415/" },
+            { "imgUrl": "https://i.pinimg.com/736x/55/c6/90/55c690881e279ce7a379bf4d16115ff4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108470/" },
+            { "imgUrl": "https://i.pinimg.com/736x/68/6c/09/686c095f25ad6b13b4259380449a4c38.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108519/" },
+            { "imgUrl": "https://i.pinimg.com/736x/44/35/dd/4435dd22a211478e9249b89c5e458f22.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108503/" },
+            { "imgUrl": "https://i.pinimg.com/736x/6a/b2/f9/6ab2f9c80e7f9a9008e726008bcec226.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108315/" },
+            { "imgUrl": "https://i.pinimg.com/736x/e3/07/81/e307811462d0af5fdd9df164ae34d545.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108499/" },
+            { "imgUrl": "https://i.pinimg.com/736x/55/1e/c2/551ec2ce2f28e990e4eae89901bca8e4.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108478/" },
+            { "imgUrl": "https://i.pinimg.com/736x/27/4b/86/274b86945744824db8cf8c28958a81af.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108483/" },
+            { "imgUrl": "https://i.pinimg.com/736x/d6/c6/07/d6c607c90e48886ba0f2d080217bd427.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108408/" },
+            { "imgUrl": "https://i.pinimg.com/736x/49/f8/c3/49f8c3632573533f82ef876cd6a00445.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108302/" },
+            { "imgUrl": "https://i.pinimg.com/736x/8f/3c/f9/8f3cf9a5c0e2346070c6d3e42f233068.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108475/" },
+            { "imgUrl": "https://i.pinimg.com/736x/c0/46/39/c04639fc347b1a3cb1123528e9c13b21.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108492/" },
+            { "imgUrl": "https://i.pinimg.com/736x/35/aa/52/35aa523c1c424a63049669d42256980d.jpg", "link": "https://tr.pinterest.com/pin/1104015296186108507/" }
         ]
     };
 
@@ -71,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         // Bulletproof fallbacks & Migration
         if (typeof config.speed === 'undefined') config.speed = defaultConfig.speed;
-        if (!config.images || config.images.length < 5 || (config.images[0] && config.images[0].imgUrl.includes('unsplash.com'))) {
+        if (!config.images || config.images.length < 5 || (config.images[0] && config.images[0].imgUrl.includes('pinimg.com/736x/82/6b/b3'))) {
             config.images = JSON.parse(JSON.stringify(defaultConfig.images));
         }
         
