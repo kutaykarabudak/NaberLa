@@ -33,27 +33,35 @@ document.addEventListener('DOMContentLoaded', () => {
         speed: 3,
         music: [
             'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
-            'https://www.youtube.com/watch?v=5qap5aO4i9A' // Lofi/chill example
+            'https://www.youtube.com/watch?v=5qap5aO4i9A'
         ],
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800',
             'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800',
             'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1503185912284-5271ff81b9a8?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800'
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800'
         ]
     };
 
-    let config = JSON.parse(localStorage.getItem('naberlaConfig'));
-    // Migration: If config exists but music is string, convert to array
-    if(config && typeof config.music === 'string') {
-        config.music = [config.music];
-        saveData();
+    let config = null;
+    try {
+        config = JSON.parse(localStorage.getItem('naberlaConfig'));
+    } catch(e) {
+        console.error("Error parsing config", e);
     }
-    if(!config) config = defaultConfig;
+
+    if (!config) {
+        config = JSON.parse(JSON.stringify(defaultConfig));
+    } else {
+        // Bulletproof fallbacks
+        if (typeof config.speed === 'undefined') config.speed = defaultConfig.speed;
+        if (!config.images || !Array.isArray(config.images)) config.images = [...defaultConfig.images];
+        if (!config.music) config.music = [...defaultConfig.music];
+        else if (typeof config.music === 'string') config.music = [config.music];
+    }
+    
+    // Always save normalized config back immediately
+    saveData();
 
     function saveData() {
         localStorage.setItem('naberlaConfig', JSON.stringify(config));
@@ -100,14 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             list.appendChild(li);
         });
-        bindDeleteButtons();
     }
 
     // Music Handlers
     document.getElementById('add-music-btn').addEventListener('click', () => {
         const input = document.getElementById('new-music-url');
         if(input.value.trim() !== '') {
-            if(!config.music) config.music = [];
             config.music.push(input.value.trim());
             input.value = '';
             saveData();
@@ -118,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMusic() {
         const list = document.getElementById('music-list');
         list.innerHTML = '';
-        if(!config.music) config.music = [];
         config.music.forEach((url, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
@@ -129,27 +134,21 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             list.appendChild(li);
         });
-        bindDeleteButtons();
     }
 
-    function bindDeleteButtons() {
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            // Remove old listeners to prevent duplicates
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            
-            newBtn.addEventListener('click', (e) => {
-                const index = parseInt(e.target.getAttribute('data-index'));
-                const type = e.target.getAttribute('data-type');
-                if(type === 'img') {
-                    config.images.splice(index, 1);
-                    renderImages();
-                } else if(type === 'music') {
-                    config.music.splice(index, 1);
-                    renderMusic();
-                }
-                saveData();
-            });
-        });
-    }
+    // Event Delegation for Delete Buttons
+    document.querySelector('.admin-content').addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-btn')) {
+            const type = e.target.getAttribute('data-type');
+            const index = parseInt(e.target.getAttribute('data-index'));
+            if(type === 'img') {
+                config.images.splice(index, 1);
+                renderImages();
+            } else if(type === 'music') {
+                config.music.splice(index, 1);
+                renderMusic();
+            }
+            saveData();
+        }
+    });
 });
