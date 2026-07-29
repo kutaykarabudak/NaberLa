@@ -237,8 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.onload = () => {
-                        // If the image is extremely small or pixelated, discard it
-                        if (img.naturalWidth >= 400 && img.naturalHeight >= 400) {
+                        // Strict quality check: >= 700px width/height
+                        if (img.naturalWidth >= 700 || img.naturalHeight >= 700) {
                             newImages.push(imgData);
                         }
                         resolve();

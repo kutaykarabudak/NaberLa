@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NaberLa - Endless Vibe</title>
+    <title>NaberLa.co</title>
     <meta name="description" content="A continuous feed of curated posts with background house/trip music.">
-    <link rel="stylesheet" href="styles.css?v=11">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="stylesheet" href="styles.css?v=12">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Caveat:wght@600&display=swap" rel="stylesheet">
     <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
     <!-- Initial Overlay for Autoplay Policy -->
-    <div id="start-overlay" class="overlay">
-        <div class="overlay-content">
-            <h1>NaberLa</h1>
-            <p>Experience the vibe.</p>
-            <button id="enter-btn" class="btn primary">ENTER NABERLA</button>
+    <div id="start-overlay" class="overlay" style="background: #000000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="overlay-content" style="text-align:center;">
+            <h1 style="display:flex; align-items:center; justify-content:center; gap:15px; font-size:4rem; margin-bottom: 2rem;">
+                Naber <img src="assets/logo.png" alt="NaberLa Logo" style="height:80px; object-fit:contain;"> LA
+            </h1>
+            <button id="enter-btn" class="btn primary" style="font-family: 'Caveat', cursive; font-style: italic; font-size: 2.5rem; padding: 10px 40px; background: transparent; border: 2px solid #8a2be2; color: #d8b4fe;">Enter</button>
         </div>
     </div>
 
     <!-- Main Container -->
     <main id="app">
         <header>
-            <div class="logo">NaberLa.</div>
+            <div class="logo" style="display:flex; align-items:center; gap:10px;">
+                <img src="assets/logo.png" alt="logo" style="height:35px;"> NaberLa.co
+            </div>
             <div>
                 <a href="admin.html" class="btn outline" style="margin-right: 15px;">Admin</a>
                 <button id="contact-btn" class="btn outline" style="margin-right: 15px;">Contact</button>
@@ -99,6 +103,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>

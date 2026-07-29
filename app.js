@@ -268,10 +268,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // RENDER POSTS
+    let totalRendered = 0;
     const renderPosts = (count = 10) => {
         if(config.images.length === 0) return; 
         
         for (let i = 0; i < count; i++) {
+            totalRendered++;
+            
+            // Insert AdSense block every 10 images
+            if (totalRendered % 10 === 0) {
+                const adBlock = document.createElement('article');
+                adBlock.className = 'post medium col-span-2 adsense-container';
+                adBlock.style.background = '#111';
+                adBlock.style.display = 'flex';
+                adBlock.style.alignItems = 'center';
+                adBlock.style.justifyContent = 'center';
+                adBlock.style.border = '1px dashed #333';
+                adBlock.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <span style="font-size:0.7rem; color:#888; letter-spacing:2px; text-transform:uppercase;">Advertisement</span>
+                        <div style="margin-top:15px; width:300px; height:250px; background:#0a0a0a; display:flex; align-items:center; justify-content:center; color:#555;">
+                            Google AdSense
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(adBlock);
+            }
+
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
             const sizeClasses = ['small', 'medium', 'large'];
