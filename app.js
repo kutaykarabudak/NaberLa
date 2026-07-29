@@ -2,60 +2,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const startOverlay = document.getElementById('start-overlay');
     const enterBtn = document.getElementById('enter-btn');
     const bgMusic = document.getElementById('bg-music');
+    const musicSrc = document.getElementById('music-src');
     const muteBtn = document.getElementById('mute-btn');
     const feedContainer = document.getElementById('feed-container');
     
     let isMuted = false;
-    let page = 1;
     let isLoading = false;
+    let scrollInterval;
 
-    // Mock Data Generator
-    const generateMockPosts = (count = 3) => {
-        const posts = [];
-        const usernames = ['model.life', 'fashion_icon', 'runway_star', 'style.muse', 'vogue.dreamer'];
-        for (let i = 0; i < count; i++) {
-            const id = Math.floor(Math.random() * 1000);
-            const userIndex = Math.floor(Math.random() * usernames.length);
-            posts.push({
-                imageUrl: `https://picsum.photos/seed/${id}/600/800`, // Placeholder for model image
-                avatarUrl: `https://i.pravatar.cc/150?u=${id}`,
-                username: usernames[userIndex],
-                bio: 'Fashion | Travel | Lifestyle',
-                postLink: 'https://www.instagram.com/' // Redirect link
-            });
-        }
-        return posts;
+    // Load Configuration from localStorage
+    const defaultConfig = {
+        speed: 3,
+        music: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3',
+        images: [
+            'https://picsum.photos/seed/1/400/600',
+            'https://picsum.photos/seed/2/600/400',
+            'https://picsum.photos/seed/3/500/500',
+            'https://picsum.photos/seed/4/400/800',
+            'https://picsum.photos/seed/5/800/600',
+            'https://picsum.photos/seed/6/500/700',
+            'https://picsum.photos/seed/7/600/600',
+            'https://picsum.photos/seed/8/400/500',
+            'https://picsum.photos/seed/9/700/500'
+        ]
     };
 
+    let config = JSON.parse(localStorage.getItem('naberlaConfig')) || defaultConfig;
+    
+    // Apply music config
+    musicSrc.src = config.music;
+    bgMusic.load();
+
     // Render Posts
-    const renderPosts = (posts) => {
-        posts.forEach(post => {
+    const renderPosts = (count = 10) => {
+        if(config.images.length === 0) return; // No images available
+        
+        for(let i=0; i<count; i++) {
+            // Pick a random image from the config
+            const randomImage = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
             article.className = 'post';
-            article.onclick = () => window.open(post.postLink, '_blank');
             
+            // Mock username
+            const id = Math.floor(Math.random() * 1000);
+            const usernames = ['model.life', 'vogue.dreamer', 'style.muse', 'runway_star'];
+            const username = usernames[Math.floor(Math.random() * usernames.length)];
+
+            article.onclick = () => window.open('https://www.instagram.com/', '_blank');
             article.innerHTML = `
-                <img src="${post.imageUrl}" alt="Instagram Post" loading="lazy">
+                <img src="${randomImage}" alt="Instagram Post" loading="lazy">
                 <div class="post-info">
-                    <img src="${post.avatarUrl}" alt="${post.username}" class="avatar">
+                    <img src="https://i.pravatar.cc/150?u=${id}" alt="${username}" class="avatar">
                     <div class="user-details">
-                        <h3>@${post.username}</h3>
-                        <p>${post.bio}</p>
+                        <h3>@${username}</h3>
+                        <p>Fashion | Lifestyle</p>
                     </div>
                 </div>
             `;
             feedContainer.appendChild(article);
-        });
+        }
     };
 
-    // Load initial posts
-    renderPosts(generateMockPosts(4));
+    // Initial load
+    renderPosts(12);
 
     // Initialization / Autoplay policy handling
     enterBtn.addEventListener('click', () => {
         startOverlay.classList.add('hidden');
         bgMusic.volume = 0.5;
         bgMusic.play().catch(e => console.log("Audio play failed:", e));
+        startAutoScroll();
     });
 
     // Mute/Unmute
@@ -69,16 +85,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Infinite Scroll
-    window.addEventListener('scroll', () => {
-        if(isLoading) return;
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-            isLoading = true;
-            // Simulate network request
-            setTimeout(() => {
-                renderPosts(generateMockPosts(3));
-                isLoading = false;
-            }, 800);
+    // Auto-Scroll Logic
+    function startAutoScroll() {
+        const speedMultiplier = parseInt(config.speed) || 3;
+        // speed mapped to pixel increments per frame (approx 60fps)
+        const pixelsPerFrame = speedMultiplier * 0.5; 
+        
+        function scrollLoop() {
+            window.scrollBy(0, pixelsPerFrame);
+            
+            // Check for bottom to load more
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+                if(!isLoading) {
+                    isLoading = true;
+                    setTimeout(() => {
+                        renderPosts(8);
+                        isLoading = false;
+                    }, 100);
+                }
+            }
+            scrollInterval = requestAnimationFrame(scrollLoop);
         }
+        scrollInterval = requestAnimationFrame(scrollLoop);
+    }
+
+    // Pause auto-scroll on manual interaction
+    let scrollTimeout;
+    window.addEventListener('wheel', () => {
+        cancelAnimationFrame(scrollInterval);
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            startAutoScroll();
+        }, 1500); // Resume auto-scroll after 1.5s of no manual scrolling
     });
 });
