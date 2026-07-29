@@ -180,6 +180,96 @@
         return url;
     }
 
+    /* ─── PINTEREST DEEP BOARD SCRAPER (Full 250+ Images) ─── */
+    async function scrapePinterestBoard(url, onProgress) {
+        const allImages = new Set();
+        let boardPath = '';
+        
+        const bm = url.match(/pinterest\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?/);
+        if (bm && !bm[1].startsWith('pin/')) {
+            boardPath = bm[1].replace(/\/$/, '');
+        }
+
+        // 1. Scraping main HTML page (contains JSON state & initial pinimg URLs)
+        onProgress("Fetching board page HTML...");
+        try {
+            const fetchUrl = url.includes('pinterest.com') ? url : `https://www.pinterest.com/${boardPath}/`;
+            const html = await proxyFetch(fetchUrl);
+            
+            // Extract all pinimg image URLs from entire HTML page source
+            const matches = html.match(/https:\/\/i\.pinimg\.com\/(?:originals|736x|474x|236x)\/[a-zA-Z0-9_\-\/]+\.(?:jpg|png|webp|gif)/g) || [];
+            matches.forEach(u => {
+                if (!u.includes('user/') && !u.includes('default_') && !u.includes('75x75')) {
+                    allImages.add(u.replace(/\/(?:236x|474x|736x)\//, '/originals/'));
+                }
+            });
+            onProgress(`Found ${allImages.size} high-res images in HTML...`);
+
+            // Extract board_id and bookmark for API pagination
+            let boardId = null;
+            let bookmark = null;
+
+            const bIdMatch = html.match(/"board_id":"(\d+)"/) || html.match(/"id":"(\d+)"/);
+            if (bIdMatch) boardId = bIdMatch[1];
+            const bkMatch = html.match(/"bookmark":"([^"]+)"/);
+            if (bkMatch) bookmark = bkMatch[1];
+
+            // 2. Fetch BoardFeedResource API for next pages (250+ items)
+            if (boardId) {
+                let page = 1;
+                while (bookmark && page <= 10) {
+                    onProgress(`Fetching API page ${page} (${allImages.size} total images)...`);
+                    try {
+                        const apiData = {
+                            options: { board_id: boardId, page_size: 250, bookmark: bookmark },
+                            context: {}
+                        };
+                        const apiUrl = `https://www.pinterest.com/resource/BoardFeedResource/get/?data=${encodeURIComponent(JSON.stringify(apiData))}`;
+                        const apiResText = await proxyFetch(apiUrl);
+                        const apiJson = JSON.parse(apiResText);
+                        
+                        const resourceData = apiJson.resource_response?.data || [];
+                        let newCount = 0;
+                        resourceData.forEach(pin => {
+                            const orig = pin.images?.orig?.url || pin.images?.['736x']?.url;
+                            if (orig) {
+                                allImages.add(orig.replace(/\/(?:236x|474x|736x)\//, '/originals/'));
+                                newCount++;
+                            }
+                        });
+
+                        bookmark = apiJson.resource_response?.bookmark || null;
+                        if (newCount === 0 || !bookmark) break;
+                        page++;
+                    } catch(err) {
+                        console.warn("API page fetch error:", err);
+                        break;
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn("HTML/API scrape failed:", e);
+        }
+
+        // 3. Fallback: RSS Feed if HTML found 0
+        if (allImages.size === 0 && boardPath) {
+            onProgress("Fetching RSS feed fallback...");
+            try {
+                const rss = await proxyFetch(`https://www.pinterest.com/${boardPath}.rss`);
+                if (rss.includes('<item')) {
+                    const doc = new DOMParser().parseFromString(rss, 'text/xml');
+                    doc.querySelectorAll('item').forEach(item => {
+                        const desc = item.querySelector('description')?.textContent || '';
+                        const sm = desc.match(/src="([^"]+)"/);
+                        if (sm) allImages.add(sm[1].replace(/\/(?:236x|474x|736x)\//, '/originals/'));
+                    });
+                }
+            } catch(e) {}
+        }
+
+        return Array.from(allImages).map(url => ({ imgUrl: url, link: url, width: 0, height: 0 }));
+    }
+
     /* ─── PINTEREST SCANNER ─── */
     $('btn-scan').addEventListener('click', async()=>{
         const raw = $('inp-pin').value.trim();
@@ -190,89 +280,57 @@
         btn.disabled=true; btn.textContent='⏳ Scanning…';
         msg.style.display='block'; msg.style.color='#d8b4fe';
         wrap.style.display='block'; bar.style.width='10%';
-        msg.textContent='Resolving URL…';
 
-        let found=[];
         try{
-            const resolved=await resolveUrl(raw);
-            msg.textContent='Resolved: '+resolved.substring(0,50)+'…';
-            bar.style.width='20%';
+            const resolved = await resolveUrl(raw);
+            msg.textContent = 'Scanning board: ' + resolved.substring(0, 50) + '...';
+            bar.style.width = '25%';
 
-            // Try RSS first (boards)
-            const boardMatch=resolved.match(/pinterest\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?/);
-            if(boardMatch && !boardMatch[1].startsWith('pin/')){
-                const bp=boardMatch[1].replace(/\/$/,'');
-                msg.textContent=`Board: ${bp} — Fetching RSS…`;
-                bar.style.width='35%';
-                try{
-                    const rss=await proxyFetch('https://www.pinterest.com/'+bp+'.rss');
-                    if(rss.includes('<item')){
-                        const doc=new DOMParser().parseFromString(rss,'text/xml');
-                        doc.querySelectorAll('item').forEach(item=>{
-                            const desc=item.querySelector('description')?.textContent||'';
-                            const link=item.querySelector('link')?.textContent||'';
-                            const sm=desc.match(/src="([^"]+)"/);
-                            if(sm) found.push({imgUrl:sm[1].replace(/\/(?:236x|474x|736x)\//,'/originals/'),link,width:0,height:0});
-                        });
-                    }
-                }catch(e){ console.warn('RSS fail',e); }
-            }
+            const found = await scrapePinterestBoard(resolved, (statusText) => {
+                msg.textContent = statusText;
+            });
 
-            // Fallback: scrape HTML
-            if(!found.length){
-                msg.textContent='Scraping HTML…';
-                bar.style.width='45%';
-                const html=await proxyFetch(resolved);
-                const matches=html.match(/https:\/\/i\.pinimg\.com\/(?:originals|736x|474x|236x)\/[a-zA-Z0-9_\-\/]+\.(?:jpg|png|webp|gif)/g)||[];
-                const uniq=new Set();
-                matches.forEach(u=>{
-                    if(!u.includes('user/')&&!u.includes('default_')&&!u.includes('75x75'))
-                        uniq.add(u.replace(/\/(?:236x|474x|736x)\//,'/originals/'));
-                });
-                uniq.forEach(u=>found.push({imgUrl:u,link:resolved,width:0,height:0}));
-            }
-
-            bar.style.width='70%';
-            msg.textContent=`Analyzing ${found.length} images…`;
+            bar.style.width = '70%';
+            msg.textContent = `Analyzing dimensions for ${found.length} images…`;
 
             // Measure dimensions, filter tiny icons
-            let valid=[];
-            let done=0;
-            await Promise.all(found.map(item=>new Promise(res=>{
-                const img=new Image();
-                img.onload=()=>{
-                    item.width=img.naturalWidth; item.height=img.naturalHeight;
-                    if(img.naturalWidth>=200&&img.naturalHeight>=200) valid.push(item);
+            let valid = [];
+            let done = 0;
+            await Promise.all(found.map(item => new Promise(res => {
+                const img = new Image();
+                img.onload = () => {
+                    item.width = img.naturalWidth; item.height = img.naturalHeight;
+                    if(img.naturalWidth >= 200 && img.naturalHeight >= 200) valid.push(item);
                     done++;
-                    msg.textContent=`Analyzed ${done}/${found.length} (${valid.length} valid)`;
+                    msg.textContent = `Analyzed ${done}/${found.length} (${valid.length} HD valid)…`;
                     res();
                 };
-                img.onerror=()=>{ done++; res(); };
-                img.src=item.imgUrl;
+                img.onerror = () => { done++; res(); };
+                img.src = item.imgUrl;
             })));
 
-            bar.style.width='100%';
+            bar.style.width = '100%';
 
             if(!valid.length){
-                msg.textContent='⚠️ No valid images found.';
-                msg.style.color='#facc15';
+                msg.textContent = '⚠️ No valid images found. Check the Pinterest board URL.';
+                msg.style.color = '#facc15';
             } else {
-                if(clear) cfg.images=valid;
+                if(clear) cfg.images = valid;
                 else {
-                    const existing=new Set(cfg.images.map(i=>i.imgUrl));
-                    cfg.images=valid.filter(i=>!existing.has(i.imgUrl)).concat(cfg.images);
+                    const existing = new Set(cfg.images.map(i => i.imgUrl));
+                    cfg.images = valid.filter(i => !existing.has(i.imgUrl)).concat(cfg.images);
                 }
                 save(); renderImages();
-                msg.textContent=`✅ ${valid.length} HD images imported!`;
-                msg.style.color='#4ade80';
-                $('inp-pin').value='';
+                msg.textContent = `✅ Success! ${valid.length} 4K HD images imported into database!`;
+                msg.style.color = '#4ade80';
+                $('inp-pin').value = '';
             }
         }catch(e){
-            msg.textContent='❌ '+e.message;
-            msg.style.color='#ef4444';
+            msg.textContent = '❌ ' + e.message;
+            msg.style.color = '#ef4444';
         }
-        setTimeout(()=>{wrap.style.display='none';},3000);
-        btn.textContent='Scan & Import'; btn.disabled=false;
+        setTimeout(() => { wrap.style.display = 'none'; }, 4000);
+        btn.textContent = 'Scan & Import'; btn.disabled = false;
     });
 
 })();
