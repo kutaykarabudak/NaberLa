@@ -24,12 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let isHovering = false;
     let isScrollManuallyPaused = false;
 
-    // Custom Logo Mouse Cursor Tracking (top-left anchor point)
+    // Custom Logo Mouse Cursor Tracking
+    // After rotate(180deg), the sharp tip is at TOP-CENTER of the 32x32 box.
+    // So offset X by -16px (half width) to center the tip on the mouse point.
     const customCursor = document.getElementById('custom-cursor');
     if (customCursor) {
         document.addEventListener('mousemove', (e) => {
-            // Position cursor so the top-left corner of the rotated image is at mouse tip
-            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.left = (e.clientX - 16) + 'px';
             customCursor.style.top = e.clientY + 'px';
         });
     }
@@ -97,20 +98,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const SVG_UNMUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
     const SVG_MUTED = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
 
-    window.onYouTubeIframeAPIReady = function() {
+    function initYouTubePlayer() {
+        if (ytPlayer) return; // Already initialized
         const originUrl = (window.location.origin === 'file://' || window.location.origin === 'null') 
             ? 'https://localhost' 
             : window.location.origin;
 
         ytPlayer = new YT.Player('yt-player', {
-            height: '0', width: '0',
-            playerVars: { 'autoplay': 1, 'controls': 0, 'origin': originUrl },
+            height: '1', width: '1',
+            playerVars: { 'autoplay': 0, 'controls': 0, 'origin': originUrl },
             events: {
-                'onReady': () => { isYtReady = true; },
+                'onReady': () => { isYtReady = true; console.log('YT Player READY'); },
                 'onStateChange': onPlayerStateChange,
-                'onError': () => playNextTrack()
+                'onError': (e) => { console.error('YT Error:', e.data); playNextTrack(); }
             }
         });
+    }
+
+    // Handle YT API: if already loaded, init now. Otherwise set global callback.
+    if (typeof YT !== 'undefined' && YT.Player) {
+        initYouTubePlayer();
+    }
+    window.onYouTubeIframeAPIReady = function() {
+        initYouTubePlayer();
     };
 
     function onPlayerStateChange(event) {
