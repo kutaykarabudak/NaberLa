@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let isHovering = false; // To pause auto-scroll
     let isScrollManuallyPaused = false;
 
+    // Custom Logo Mouse Cursor Tracking
+    const customCursor = document.getElementById('custom-cursor');
+    if (customCursor) {
+        window.addEventListener('mousemove', (e) => {
+            customCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+        });
+    }
+
     // Config
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
@@ -291,19 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
-            const sizeClasses = ['small', 'medium', 'large'];
-            let sizeClass = sizeClasses[Math.floor(Math.random() * sizeClasses.length)];
-            
-            const randCol = Math.random();
-            let colClass = 'col-span-1';
-            if (randCol > 0.90) {
-                colClass = 'col-span-3';
-                sizeClass = 'large';
-            } else if (randCol > 0.70) {
-                colClass = 'col-span-2';
-            }
-            
-            article.className = `post ${sizeClass} ${colClass}`;
+            article.className = 'post';
             
             // Ensure highest HD original resolution
             const hdImgUrl = randomItem.imgUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');

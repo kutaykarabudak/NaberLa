@@ -6,20 +6,33 @@
     <title>NaberLa.co</title>
     <meta name="description" content="A continuous feed of curated posts with background house/trip music.">
     <link rel="icon" type="image/png" href="assets/logo.png">
-    <link rel="stylesheet" href="styles.css?v=200">
+    <link rel="stylesheet" href="styles.css?v=300">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
+    <!-- Custom Logo Mouse Cursor -->
+    <div id="custom-cursor">
+        <img src="assets/logo.png" alt="cursor">
+    </div>
+
+    <!-- Floating Admin 'A' Button at Bottom-Right -->
+    <a href="admin2.html" id="floating-admin-btn" title="Admin Panel">A</a>
+
     <!-- Initial Overlay for Autoplay Policy & Curtain Lift Animation -->
     <div id="start-overlay" class="overlay">
         <div class="overlay-content">
             <h1 class="naber-title">
                 NABER <img src="assets/logo.png" alt="NaberLa Logo" class="naber-logo"> LA
             </h1>
-            <button id="enter-btn" class="glow-play-btn" aria-label="Play" onclick="document.getElementById('start-overlay').classList.add('curtain-lift'); setTimeout(function(){ document.getElementById('start-overlay').style.display='none'; }, 800);">
-                <svg viewBox="0 0 24 24" width="46" height="46" fill="currentColor">
-                    <polygon points="8,5 20,12 8,19"></polygon>
+            
+            <!-- Pure Skin-Tone Play Triangle (No Outer Circle) with Expanding Ripple Rings -->
+            <button id="enter-btn" class="pure-play-btn" aria-label="Play" onclick="document.getElementById('start-overlay').classList.add('curtain-lift'); setTimeout(function(){ document.getElementById('start-overlay').style.display='none'; }, 850);">
+                <div class="ripple-ring"></div>
+                <div class="ripple-ring delay-1"></div>
+                <div class="ripple-ring delay-2"></div>
+                <svg viewBox="0 0 24 24" width="70" height="70" fill="#e0af96">
+                    <polygon points="6,3 20,12 6,21"></polygon>
                 </svg>
             </button>
         </div>
@@ -32,7 +45,6 @@
                 <img src="assets/logo.png" alt="logo" style="height:35px;"> NaberLa.co
             </div>
             <div>
-                <a href="admin2.html" class="btn outline" style="margin-right: 15px;">Admin</a>
                 <button id="contact-btn" class="btn outline" style="margin-right: 15px;">Contact</button>
                 <a href="https://github.com/kutaykarabudak/NaberLa" target="_blank" class="btn primary">GitHub</a>
             </div>
@@ -107,6 +119,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=200"></script>
+    <script src="app.js?v=300"></script>
 </body>
 </html>
