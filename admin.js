@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const xml = parser.parseFromString(text, "text/xml");
             
             const items = xml.querySelectorAll("item");
-            let newImages = [];
+            let rawImages = [];
             
             items.forEach(item => {
                 const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
@@ -222,15 +222,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const srcMatch = desc.match(/src="([^"]+)"/);
                 if (srcMatch && srcMatch[1]) {
-                    const highRes = srcMatch[1].replace('236x', '736x').replace('474x', '736x');
-                    newImages.push({ imgUrl: highRes, link: link });
+                    // Pinterest often hosts highest res at "originals" or "736x"
+                    const highRes = srcMatch[1].replace(/236x|474x/, '736x');
+                    rawImages.push({ imgUrl: highRes, link: link });
                 }
             });
+            
+            progressBar.style.width = '85%';
+            statusLabel.textContent = "Analyzing image quality... (Discarding low-res)";
+            
+            // Filter out low quality images by checking natural dimensions
+            let newImages = [];
+            await Promise.all(rawImages.map(imgData => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // If the image is extremely small or pixelated, discard it
+                        if (img.naturalWidth >= 400 && img.naturalHeight >= 400) {
+                            newImages.push(imgData);
+                        }
+                        resolve();
+                    };
+                    img.onerror = () => resolve(); // Ignore broken links
+                    img.src = imgData.imgUrl;
+                });
+            }));
             
             progressBar.style.width = '100%';
             
             if(newImages.length === 0) {
-                statusLabel.textContent = "No images found. Ensure board is public.";
+                statusLabel.textContent = "No high-quality images found. Ensure board has HD content.";
             } else {
                 if(clearExisting) {
                     config.images = newImages;
@@ -239,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderImages();
-                statusLabel.textContent = `✅ Success! ${newImages.length} images imported.`;
+                statusLabel.textContent = `✅ Success! ${newImages.length} HD images imported (Filtered out low-res).`;
                 document.getElementById('pinterest-url').value = '';
             }
         } catch (err) {
