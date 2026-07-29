@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaberLa - Endless Vibe</title>
+    <meta name="description" content="A continuous feed of curated posts with background house/trip music.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Initial Overlay for Autoplay Policy -->
+    <div id="start-overlay" class="overlay">
+        <div class="overlay-content">
+            <h1>NaberLa</h1>
+            <p>Experience the vibe.</p>
+            <button id="enter-btn">Enter</button>
+        </div>
+    </div>
+
+    <!-- Background Audio -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d812bd15e.mp3?filename=house-music-111166.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Main Container -->
+    <main id="app">
+        <header class="app-header">
+            <h1 class="logo">NaberLa.</h1>
+            <div class="music-controls">
+                <button id="mute-btn" aria-label="Toggle Music">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="feed" id="feed-container">
+            <!-- Posts will be injected here by JS -->
+        </section>
+        
+        <div class="loading-indicator">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
