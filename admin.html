@@ -35,6 +35,18 @@
                 <ul id="music-list" class="item-list"></ul>
             </section>
 
+            <section class="card" style="background:#1a1025; border-color:#8a2be2;">
+                <h2 style="color:#d8b4fe;">Pinterest Auto-Scraper</h2>
+                <div class="input-group" style="flex-direction:column; gap:10px;">
+                    <input type="text" id="pinterest-url" placeholder="Paste Pinterest Board URL (e.g. https://tr.pinterest.com/kutaykarabudak/nabrla/)">
+                    <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="clear-existing" checked> Clear existing images before adding new ones
+                    </label>
+                    <button id="scan-btn" class="btn primary" style="background:#8a2be2;">Scan & Import</button>
+                    <p id="scan-status" style="color:#8a2be2; font-size:0.9rem; display:none;">Scanning...</p>
+                </div>
+            </section>
+
             <section class="card">
                 <h2>Image Feed Links</h2>
                 <div class="input-group" style="flex-direction:column; gap:10px;">
@@ -46,6 +58,6 @@
             </section>
         </div>
     </div>
-    <script src="admin.js?v=5"></script>
+    <script src="admin.js?v=6"></script>
 </body>
 </html>

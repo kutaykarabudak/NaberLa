@@ -176,4 +176,67 @@ document.addEventListener('DOMContentLoaded', () => {
             saveData();
         }
     });
+
+    // Pinterest Auto-Scraper
+    document.getElementById('scan-btn').addEventListener('click', async () => {
+        let url = document.getElementById('pinterest-url').value.trim();
+        if(!url) { alert("Please enter a Pinterest board URL"); return; }
+        
+        // Ensure it ends with .rss
+        if (!url.endsWith('.rss')) {
+            if (!url.endsWith('/')) url += '/';
+            url += '.rss';
+        }
+
+        const statusLabel = document.getElementById('scan-status');
+        const clearExisting = document.getElementById('clear-existing').checked;
+        const btn = document.getElementById('scan-btn');
+        
+        btn.disabled = true;
+        statusLabel.style.display = 'block';
+        statusLabel.textContent = "Connecting to Pinterest via Proxy...";
+        
+        try {
+            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error("Network error or board is private.");
+            
+            const text = await response.text();
+            statusLabel.textContent = "Parsing data...";
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, "text/xml");
+            
+            const items = xml.querySelectorAll("item");
+            let newImages = [];
+            
+            items.forEach(item => {
+                const desc = item.querySelector("description") ? item.querySelector("description").textContent : "";
+                const link = item.querySelector("link") ? item.querySelector("link").textContent : "";
+                
+                const srcMatch = desc.match(/src="([^"]+)"/);
+                if (srcMatch && srcMatch[1]) {
+                    const highRes = srcMatch[1].replace('236x', '736x').replace('474x', '736x');
+                    newImages.push({ imgUrl: highRes, link: link });
+                }
+            });
+            
+            if(newImages.length === 0) {
+                statusLabel.textContent = "No images found. Ensure board is public.";
+            } else {
+                if(clearExisting) {
+                    config.images = newImages;
+                } else {
+                    config.images = config.images.concat(newImages);
+                }
+                saveData();
+                renderImages();
+                statusLabel.textContent = `Success! ${newImages.length} images imported.`;
+                document.getElementById('pinterest-url').value = '';
+            }
+        } catch (err) {
+            statusLabel.textContent = "Error: " + err.message;
+        }
+        btn.disabled = false;
+    });
 });
