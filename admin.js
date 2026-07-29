@@ -189,20 +189,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const statusLabel = document.getElementById('scan-status');
+        const progressContainer = document.getElementById('scan-progress-container');
+        const progressBar = document.getElementById('scan-progress-bar');
         const clearExisting = document.getElementById('clear-existing').checked;
         const btn = document.getElementById('scan-btn');
         
         btn.disabled = true;
+        btn.innerHTML = '⏳ Scanning...';
         statusLabel.style.display = 'block';
-        statusLabel.textContent = "Connecting to Pinterest via Proxy...";
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '30%';
+        statusLabel.textContent = "Connecting to Pinterest proxy...";
         
         try {
             const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
             const response = await fetch(proxyUrl);
             if (!response.ok) throw new Error("Network error or board is private.");
             
+            progressBar.style.width = '70%';
+            statusLabel.textContent = "Parsing image data...";
             const text = await response.text();
-            statusLabel.textContent = "Parsing data...";
             
             const parser = new DOMParser();
             const xml = parser.parseFromString(text, "text/xml");
@@ -221,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
+            progressBar.style.width = '100%';
+            
             if(newImages.length === 0) {
                 statusLabel.textContent = "No images found. Ensure board is public.";
             } else {
@@ -231,12 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderImages();
-                statusLabel.textContent = `Success! ${newImages.length} images imported.`;
+                statusLabel.textContent = `✅ Success! ${newImages.length} images imported.`;
                 document.getElementById('pinterest-url').value = '';
             }
         } catch (err) {
-            statusLabel.textContent = "Error: " + err.message;
+            statusLabel.textContent = "❌ Error: " + err.message;
         }
+        
+        setTimeout(() => {
+            progressContainer.style.display = 'none';
+        }, 2000);
+        
+        btn.innerHTML = 'Scan & Import';
         btn.disabled = false;
     });
 });
