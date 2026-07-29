@@ -29,27 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let config = JSON.parse(localStorage.getItem('naberlaConfig')) || { speed: 3, music: [], images: [] };
     
     const defaultImages = [
-        { imgUrl: 'https://images.unsplash.com/photo-1523456382101-7053075fb13c?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/romeestrijd/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1506544777-62cd38f615ee?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/kendalljenner/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/haileybieber/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/bellahadid/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/gigihadid/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1525264353457-3f307ebc52fb?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/emrata/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/irinashayk/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/barbarapalvin/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1526413232644-8a40f4110fa7?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/taylor_hill/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1520635489814-1e0e5a953e1a?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/josephineskriver/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/marthahunt/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1510832198440-a52376950479?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/adrianalima/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1500336624523-d727130c3328?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/mirandakerr/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/sarasampaio/' },
-        { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: 'https://www.instagram.com/candiceswanepoel/' }
+        { imgUrl: 'https://images.unsplash.com/photo-1520635489814-1e0e5a953e1a?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1510832198440-a52376950479?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1500336624523-d727130c3328?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1523456382101-7053075fb13c?auto=format&fit=crop&q=80&w=800', link: '' },
+        { imgUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800', link: '' }
     ];
 
     // Migration for app side
     if (config.images) {
         config.images = config.images.map(img => typeof img === 'string' ? { imgUrl: img, link: '' } : img);
     }
+    
     if(!config.images || config.images.length < 5) {
         config.images = defaultImages;
         localStorage.setItem('naberlaConfig', JSON.stringify(config));
@@ -270,16 +266,25 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const instaUser = extractInstaUsername(randomItem.link);
 
+            const isVideo = randomItem.imgUrl.match(/\.(mp4|webm|ogg)$/i);
+            const mediaTag = isVideo 
+                ? `<video src="${randomItem.imgUrl}" autoplay loop muted playsinline class="post-media"></video>`
+                : `<img src="${randomItem.imgUrl}" alt="Feed Media" loading="lazy" class="post-media">`;
+
             article.onclick = () => {
-                const url = randomItem.link || 'https://www.instagram.com/';
-                window.open(url, '_blank');
+                if (randomItem.link) {
+                    window.open(randomItem.link, '_blank');
+                }
             };
+            
             article.innerHTML = `
-                <img src="${randomItem.imgUrl}" alt="Instagram Post" loading="lazy">
+                ${mediaTag}
+                ${randomItem.link ? `
                 <div class="post-info">
                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="insta-icon"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                     <h3>@${instaUser}</h3>
                 </div>
+                ` : ''}
             `;
             
             // Hover-to-pause logic

@@ -35,12 +35,12 @@ a { text-decoration: none; color: inherit; }
 
 /* Post Container & Dynamic Sizes */
 .post { break-inside: avoid; position: relative; border-radius: 12px; overflow: hidden; background: #111; cursor: pointer; margin-bottom: 20px; opacity: 0; animation: fadeUp 0.8s ease forwards; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.post.small img { height: 250px; }
-.post.medium img { height: 400px; }
-.post.large img { height: 550px; }
+.post.small .post-media { height: 250px; }
+.post.medium .post-media { height: 400px; }
+.post.large .post-media { height: 550px; }
 @keyframes fadeUp { to { opacity: 1; } }
-.post img { width: 100%; display: block; object-fit: cover; transition: transform 0.5s ease, filter 0.8s ease; filter: grayscale(100%); }
-.post:hover img { transform: scale(1.03); filter: grayscale(0%); }
+.post .post-media { width: 100%; display: block; object-fit: cover; transition: transform 0.5s ease, filter 0.8s ease; filter: grayscale(100%); }
+.post:hover .post-media { transform: scale(1.03); filter: grayscale(0%); }
 
 /* Glassmorphism Hover Info */
 .post-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-top: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.4s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
