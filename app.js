@@ -36,15 +36,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize YouTube API
     window.onYouTubeIframeAPIReady = function() {
+        // Use a dummy origin if running on local file system to bypass some YT restrictions
+        const originUrl = (window.location.origin === 'file://' || window.location.origin === 'null') 
+            ? 'https://localhost' 
+            : window.location.origin;
+
         ytPlayer = new YT.Player('yt-player', {
             height: '0', width: '0',
-            playerVars: { 'autoplay': 0, 'controls': 0 },
+            playerVars: { 
+                'autoplay': 0, 
+                'controls': 0, 
+                'origin': originUrl 
+            },
             events: {
                 'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
             }
         });
     };
+
+    function onPlayerError(event) {
+        console.log("YouTube Player Error:", event.data);
+        titleEl.innerText = "Error playing YouTube video";
+        playNextTrack(); // Skip to next track on error
+    }
 
     function onPlayerReady(event) {
         isYtReady = true;
