@@ -268,11 +268,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const sizes = ['small', 'medium', 'large'];
 
-        for(let i=0; i<count; i++) {
+        for (let i = 0; i < count; i++) {
             const randomItem = config.images[Math.floor(Math.random() * config.images.length)];
             const article = document.createElement('article');
-            const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
-            article.className = `post ${randomSize}`;
+            const sizeClass = sizes[Math.floor(Math.random() * sizes.length)];
+            const isWide = Math.random() < 0.2 ? 'wide' : '';
+            article.className = `post ${sizeClass} ${isWide}`;
             
             const instaUser = extractInstaUsername(randomItem.link);
 
