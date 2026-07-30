@@ -233,8 +233,15 @@
             el.style.gridRowEnd = `span ${rowSpan}`;
 
             const src = img.u.replace(/\/(?:236x|474x|736x)\//,'/originals/');
+            
+            // Clean target link: if link is missing or points to a raw .jpg/.png file, convert to Pinterest link
+            let targetLink = img.l || img.link || '';
+            if (!targetLink || targetLink.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+                targetLink = `https://www.pinterest.com/`;
+            }
+
             el.innerHTML = `<img src="${src}" alt="" loading="lazy">` +
-                (img.l ? `<div class="card-overlay">🔗 View</div>` : '');
+                `<div class="card-overlay">🔗 View Link</div>`;
 
             // Fine-tune row span when image loads
             const imgEl = el.querySelector('img');
@@ -249,7 +256,7 @@
                 };
             }
 
-            if(img.l) el.addEventListener('click',()=>window.open(img.l,'_blank'));
+            el.addEventListener('click',()=>window.open(targetLink,'_blank'));
             el.addEventListener('mouseenter',()=>hovering=true);
             el.addEventListener('mouseleave',()=>hovering=false);
             feed.appendChild(el);
