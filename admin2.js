@@ -180,69 +180,107 @@
         return url;
     }
 
-    /* ─── PINTEREST DEEP BOARD SCRAPER (Full 250+ Pins with Real Links) ─── */
-    async function scrapePinterestBoard(url, onProgress) {
+    /* ─── PINTEREST DEEP BOARD & PIN SCRAPER (Pin URLs + Board URLs, 250+ Pins) ─── */
+    async function scrapePinterestBoard(inputUrl, onProgress) {
         const pinMap = new Map(); // imgUrl -> { imgUrl, link, width: 0, height: 0 }
-        let boardPath = '';
         
-        const bm = url.match(/pinterest\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?/);
-        if (bm && !bm[1].startsWith('pin/')) {
-            boardPath = bm[1].replace(/\/$/, '');
+        // Normalize URL (strip country prefixes like tr., fr., de., etc.)
+        let url = inputUrl.replace(/https?:\/\/[a-z]{2}\.pinterest\./i, 'https://www.pinterest.');
+        url = await resolveUrl(url);
+
+        let boardPath = '';
+        const pinIdMatch = url.match(/\/pin\/(\d+)/);
+        const pinId = pinIdMatch ? pinIdMatch[1] : null;
+
+        if (!pinId) {
+            const bm = url.match(/pinterest\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?/);
+            if (bm && !bm[1].startsWith('pin/')) {
+                boardPath = bm[1].replace(/\/$/, '');
+            }
         }
 
         onProgress("Connecting to Pinterest API...");
 
-        // 1. Fetch BoardFeedResource API with board_url & page_size 250 (Full 250+ pins per board!)
+        // A. If a Pin URL was provided (/pin/123456...), fetch PinResource & RelatedPinFeedResource
+        if (pinId) {
+            onProgress(`Fetching Pin #${pinId} details & related pins...`);
+            try {
+                // 1. Get Pin details + parent board
+                const pinRes = await proxyFetch(`https://www.pinterest.com/resource/PinResource/get/?data=${encodeURIComponent(JSON.stringify({ options: { id: pinId, field_set_key: "detailed" }, context: {} }))}`);
+                const pinJson = JSON.parse(pinRes);
+                const pinData = pinJson.resource_response?.data;
+                if (pinData) {
+                    const origUrl = pinData.images?.orig?.url || pinData.images?.['736x']?.url;
+                    if (origUrl) {
+                        const hdUrl = origUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
+                        const link = pinData.link || `https://www.pinterest.com/pin/${pinId}/`;
+                        pinMap.set(hdUrl, { imgUrl: hdUrl, link: link, width: 0, height: 0 });
+                    }
+                    if (pinData.board?.url) {
+                        boardPath = pinData.board.url.replace(/^\/|\/$/g, '');
+                    }
+                }
+            } catch(e) { console.warn("PinResource error:", e); }
+
+            try {
+                // 2. Fetch RelatedPinFeedResource (250+ related pins for this pin)
+                const relRes = await proxyFetch(`https://www.pinterest.com/resource/RelatedPinFeedResource/get/?data=${encodeURIComponent(JSON.stringify({ options: { pin_id: pinId, page_size: 250 }, context: {} }))}`);
+                const relJson = JSON.parse(relRes);
+                const relData = relJson.resource_response?.data || [];
+                relData.forEach(p => {
+                    const orig = p.images?.orig?.url || p.images?.['736x']?.url;
+                    if (orig) {
+                        const hdUrl = orig.replace(/\/(?:236x|474x|736x)\//, '/originals/');
+                        const pLink = p.link || (p.id ? `https://www.pinterest.com/pin/${p.id}/` : `https://www.pinterest.com/pin/${pinId}/`);
+                        if (!pinMap.has(hdUrl)) pinMap.set(hdUrl, { imgUrl: hdUrl, link: pLink, width: 0, height: 0 });
+                    }
+                });
+            } catch(e) { console.warn("RelatedPinFeedResource error:", e); }
+        }
+
+        // B. Fetch BoardFeedResource API if boardPath is known
         if (boardPath) {
             let bookmark = null;
             let page = 1;
-            
             do {
-                onProgress(`Fetching API Page ${page} (${pinMap.size} total pins found)...`);
+                onProgress(`Fetching Board API Page ${page} (${pinMap.size} total pins found)...`);
                 try {
-                    const apiOptions = {
-                        board_url: `/${boardPath}/`,
-                        page_size: 250
-                    };
+                    const apiOptions = { board_url: `/${boardPath}/`, page_size: 250 };
                     if (bookmark) apiOptions.bookmark = bookmark;
 
                     const apiUrl = `https://www.pinterest.com/resource/BoardFeedResource/get/?data=${encodeURIComponent(JSON.stringify({ options: apiOptions, context: {} }))}`;
                     const apiResText = await proxyFetch(apiUrl);
                     const apiJson = JSON.parse(apiResText);
-                    
                     const resourceData = apiJson.resource_response?.data || [];
                     let newCount = 0;
                     
-                    resourceData.forEach(pin => {
-                        const origUrl = pin.images?.orig?.url || pin.images?.['736x']?.url || pin.images?.['474x']?.url;
+                    resourceData.forEach(p => {
+                        const origUrl = p.images?.orig?.url || p.images?.['736x']?.url;
                         if (origUrl) {
                             const hdUrl = origUrl.replace(/\/(?:236x|474x|736x)\//, '/originals/');
-                            // Real Pin Link (Target website OR Pinterest Pin page)
-                            const pinLink = pin.link || (pin.id ? `https://www.pinterest.com/pin/${pin.id}/` : `https://www.pinterest.com/${boardPath}/`);
+                            const pLink = p.link || (p.id ? `https://www.pinterest.com/pin/${p.id}/` : `https://www.pinterest.com/${boardPath}/`);
                             if (!pinMap.has(hdUrl)) {
-                                pinMap.set(hdUrl, { imgUrl: hdUrl, link: pinLink, width: 0, height: 0 });
+                                pinMap.set(hdUrl, { imgUrl: hdUrl, link: pLink, width: 0, height: 0 });
                                 newCount++;
                             }
                         }
                     });
 
                     bookmark = apiJson.resource_response?.bookmark || null;
-                    console.log(`API Page ${page}: ${newCount} new pins. Bookmark:`, bookmark);
-                    
                     if (newCount === 0 || !bookmark || bookmark === '-end-') break;
                     page++;
                 } catch(err) {
-                    console.warn(`API page ${page} error:`, err);
+                    console.warn(`Board API page ${page} error:`, err);
                     break;
                 }
             } while (bookmark && page <= 10);
         }
 
-        // 2. Fallback: Parse main HTML & embedded JSON state if API returned 0
+        // C. Fallback to HTML / Embedded JSON Parsing if pinMap is still empty
         if (pinMap.size === 0) {
-            onProgress("Parsing board HTML & embedded JSON state...");
+            onProgress("Parsing page HTML & embedded JSON state...");
             try {
-                const fetchUrl = url.includes('pinterest.com') ? url : `https://www.pinterest.com/${boardPath}/`;
+                const fetchUrl = url.includes('pinterest.com') ? url : (boardPath ? `https://www.pinterest.com/${boardPath}/` : inputUrl);
                 const html = await proxyFetch(fetchUrl);
                 
                 const jsonMatches = html.match(/<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
@@ -284,7 +322,7 @@
             }
         }
 
-        // 3. Fallback: RSS Feed if HTML found 0
+        // D. Fallback to RSS Feed
         if (pinMap.size === 0 && boardPath) {
             onProgress("Fetching RSS feed fallback...");
             try {
